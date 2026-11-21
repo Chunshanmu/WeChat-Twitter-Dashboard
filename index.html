@@ -899,15 +899,26 @@
           </div>
         </div>
 
+        <!-- Quality & Compression Selector -->
+        <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-zinc-200 bg-zinc-50">
+          <label for="select-export-format" class="text-xs font-semibold text-zinc-800 shrink-0">导出画质与压缩</label>
+          <select id="select-export-format" class="rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-800 focus:outline-none focus:border-zinc-900">
+            <option value="jpg-hq" selected>高清智能压缩（JPG 92% · 推荐，体积小约80%）</option>
+            <option value="webp-hq">超清轻量压缩（WebP 92% · 体积最小）</option>
+            <option value="jpg-mid">均衡压缩（JPG 84% · 更小体积）</option>
+            <option value="png">无损原图（PNG · 体积较大）</option>
+          </select>
+        </div>
+
         <!-- Generate Action -->
         <div class="flex flex-wrap items-center gap-2">
           <button id="btn-generate-png" type="button" class="flex-1 py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap">
             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
             <span id="btn-generate-png-text">生成 PNG</span>
           </button>
-          <a id="btn-download-png" href="#" download="moments-export.png" class="hidden py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold items-center justify-center gap-1.5 transition-colors whitespace-nowrap">
+          <a id="btn-download-png" href="#" download="moments-export.jpg" class="hidden py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold items-center justify-center gap-1.5 transition-colors whitespace-nowrap">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span>保存 PNG</span>
+            <span id="btn-download-img-label">保存图片</span>
           </a>
           <button id="btn-open-clean-shot" type="button" title="图床限制跨域时，可打开无干扰纯净视图直接手机截长图" class="py-2.5 px-3 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-medium flex items-center justify-center gap-1 transition-colors whitespace-nowrap">
             <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
@@ -1450,11 +1461,7 @@
                          <span class="text-sm font-medium tracking-wide">点击导入背景图</span>
                        </div>`)
               }
-              <div class="absolute top-3 right-3 flex items-center justify-end text-white/95 drop-shadow pointer-events-none">
-                <button type="button" ${isExport ? "" : 'data-open-profile="true"'} class="pointer-events-auto w-7 h-7 rounded-full bg-black/25 hover:bg-black/40 flex items-center justify-center transition-colors" title="编辑主页资料">
-                  <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-                </button>
-              </div>
+
             </div>
             <!-- Avatar & Name overlapping bottom-right -->
             <div class="absolute right-4 -bottom-6 flex items-end gap-3">
@@ -3615,14 +3622,57 @@
             throw new Error("empty export");
           }
 
+          // Apply selected high-clarity compression format while keeping full 2x retina resolution
+          const fmt = (document.getElementById("select-export-format") && document.getElementById("select-export-format").value) || "jpg-hq";
+          let finalDataUrl = dataUrl;
+          let ext = "png";
+          if (fmt !== "png") {
+            const mime = fmt === "webp-hq" ? "image/webp" : "image/jpeg";
+            const quality = fmt === "jpg-mid" ? 0.84 : 0.92;
+            ext = fmt === "webp-hq" ? "webp" : "jpg";
+            finalDataUrl = await new Promise((resolve) => {
+              const tmpImg = new Image();
+              tmpImg.onload = () => {
+                try {
+                  const c = document.createElement("canvas");
+                  c.width = tmpImg.naturalWidth || outW;
+                  c.height = tmpImg.naturalHeight || outH;
+                  const ctx = c.getContext("2d");
+                  ctx.fillStyle = "#ffffff";
+                  ctx.fillRect(0, 0, c.width, c.height);
+                  ctx.drawImage(tmpImg, 0, 0);
+                  const compressed = c.toDataURL(mime, quality);
+                  if (compressed && compressed.startsWith(`data:${mime}`)) {
+                    resolve(compressed);
+                  } else {
+                    ext = "png";
+                    resolve(dataUrl);
+                  }
+                } catch (_) {
+                  ext = "png";
+                  resolve(dataUrl);
+                }
+              };
+              tmpImg.onerror = () => { ext = "png"; resolve(dataUrl); };
+              tmpImg.src = dataUrl;
+            });
+          }
+
+          const approxBytes = Math.round(((finalDataUrl.split(",")[1] || "").length * 3) / 4);
+          const sizeLabel = approxBytes >= 1024 * 1024
+            ? `${(approxBytes / (1024 * 1024)).toFixed(2)} MB`
+            : `${Math.max(1, Math.round(approxBytes / 1024))} KB`;
+
           const previewImg = document.getElementById("export-preview-img");
-          previewImg.src = dataUrl;
-          document.getElementById("export-preview-dims").textContent = `${outW} × ${outH} px`;
+          previewImg.src = finalDataUrl;
+          document.getElementById("export-preview-dims").textContent = `${outW} × ${outH} px · ${sizeLabel}`;
           document.getElementById("export-preview-box").classList.remove("hidden");
 
           const dlBtn = document.getElementById("btn-download-png");
-          dlBtn.href = dataUrl;
-          dlBtn.download = `${filenamePrefix}-${Date.now().toString().slice(-4)}.png`;
+          dlBtn.href = finalDataUrl;
+          dlBtn.download = `${filenamePrefix}-${Date.now().toString().slice(-4)}.${ext}`;
+          const dlLabel = document.getElementById("btn-download-img-label");
+          if (dlLabel) dlLabel.textContent = `保存 ${ext.toUpperCase()}`;
           dlBtn.classList.remove("hidden");
           dlBtn.classList.add("inline-flex");
           if (corsFailedCount > 0) {
