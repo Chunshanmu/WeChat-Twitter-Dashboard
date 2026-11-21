@@ -229,6 +229,21 @@
       transition: width 0.25s ease, max-width 0.25s ease;
     }
 
+    /* Hide scrollbars completely in Pure Clean Screenshot Mode */
+    #clean-shot-overlay,
+    html.clean-shot-active,
+    html.clean-shot-active body {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    #clean-shot-overlay::-webkit-scrollbar,
+    html.clean-shot-active::-webkit-scrollbar,
+    html.clean-shot-active body::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
     /* Toast animation */
     @keyframes toastIn {
       from { opacity: 0; transform: translate(-50%, 12px); }
@@ -3682,6 +3697,7 @@
         contentEl.innerHTML = `<div class="bg-white pb-6">${headerHtml}${postsHtml}</div>`;
         document.getElementById("export-img-modal").classList.add("hidden");
         document.getElementById("clean-shot-bar").classList.remove("hidden");
+        document.documentElement.classList.add("clean-shot-active");
         document.getElementById("clean-shot-overlay").classList.remove("hidden");
         if (window.lucide) window.lucide.createIcons();
         requestAnimationFrame(() => {
@@ -3690,6 +3706,7 @@
       });
       document.getElementById("btn-close-clean-shot").addEventListener("click", (e) => {
         e.stopPropagation();
+        document.documentElement.classList.remove("clean-shot-active");
         document.getElementById("clean-shot-overlay").classList.add("hidden");
       });
       document.getElementById("clean-shot-content").addEventListener("click", () => {
