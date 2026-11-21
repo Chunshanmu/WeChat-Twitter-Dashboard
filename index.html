@@ -756,29 +756,32 @@
       </div>
 
       <div class="p-4 space-y-4 overflow-y-auto flex-1">
-        <!-- Export Scope Selector -->
-        <div class="space-y-2">
-          <div class="text-xs font-semibold text-zinc-800">选择导出范围</div>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" data-export-scope="full" class="export-scope-btn p-2.5 rounded-xl border text-left transition-all">
-              <div class="text-xs font-semibold">完整主页</div>
-              <div class="text-[10px] text-zinc-500 mt-0.5 leading-snug">主页资料 + 全部动态</div>
-            </button>
-            <button type="button" data-export-scope="header" class="export-scope-btn p-2.5 rounded-xl border text-left transition-all">
-              <div class="text-xs font-semibold">仅导出主页</div>
-              <div class="text-[10px] text-zinc-500 mt-0.5 leading-snug">只含封面、头像与简介</div>
-            </button>
-            <button type="button" data-export-scope="single" class="export-scope-btn p-2.5 rounded-xl border text-left transition-all">
-              <div class="text-xs font-semibold">单条动态</div>
-              <div class="text-[10px] text-zinc-500 mt-0.5 leading-snug">只导出选中的一条动态</div>
-            </button>
-          </div>
-        </div>
+        <!-- Flexible Multi-Select Export Builder -->
+        <div class="space-y-3">
+          <!-- Include Profile Header Toggle -->
+          <label class="flex items-center justify-between gap-3 p-3 rounded-xl border border-zinc-200 bg-zinc-50/80 cursor-pointer hover:bg-zinc-100/70 transition-colors">
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-zinc-900">包含主页头部（封面、头像与简介）</div>
+              <div class="text-[10px] text-zinc-500 mt-0.5">勾选后可单独导出主页，或与下方勾选的动态拼成一张长图</div>
+            </div>
+            <input id="export-include-header" type="checkbox" checked class="w-4 h-4 rounded border-zinc-300 accent-zinc-900 shrink-0" />
+          </label>
 
-        <!-- Single Post Picker (visible when scope === 'single') -->
-        <div id="export-single-picker" class="hidden space-y-1.5">
-          <label for="select-export-post" class="text-[11px] font-medium text-zinc-600 block">选择要导出的动态</label>
-          <select id="select-export-post" class="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:border-zinc-900"></select>
+          <!-- Multi-Select Posts Checklist -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-xs font-semibold text-zinc-800">勾选要导出的动态</span>
+                <span id="export-selection-summary" class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 font-medium truncate">已选全部</span>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button id="btn-export-select-all" type="button" class="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-medium text-zinc-700 transition-colors">全选</button>
+                <button id="btn-export-select-current" type="button" class="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-medium text-zinc-700 transition-colors">仅当前</button>
+                <button id="btn-export-select-none" type="button" class="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-medium text-zinc-700 transition-colors">全不选</button>
+              </div>
+            </div>
+            <div id="export-posts-checklist" class="max-h-44 overflow-y-auto space-y-1.5 pr-0.5"></div>
+          </div>
         </div>
 
         <!-- Generate Action -->
@@ -2851,35 +2854,64 @@
         }
       });
 
-      // Export Image (PNG) Modal & High-DPI Renderer
-      let exportImgScope = "full"; // "full" | "header" | "single"
+      // Export Image (PNG) Modal & High-DPI Renderer (Flexible Multi-Select)
+      let exportIncludeHeader = true;
+      let exportSelectedPostIds = new Set();
 
-      function updateExportImgModalUI() {
-        document.querySelectorAll(".export-scope-btn").forEach(btn => {
-          const active = btn.dataset.exportScope === exportImgScope;
-          btn.className = active
-            ? "export-scope-btn p-2.5 rounded-xl border-2 border-zinc-900 bg-zinc-50 text-left transition-all"
-            : "export-scope-btn p-2.5 rounded-xl border border-zinc-200 hover:border-zinc-300 bg-white text-left transition-all";
-        });
-        const singlePicker = document.getElementById("export-single-picker");
-        singlePicker.classList.toggle("hidden", exportImgScope !== "single");
-
-        const selectEl = document.getElementById("select-export-post");
-        const prevVal = selectEl.value || state.selectedPostId;
-        selectEl.innerHTML = state.posts.map((post, idx) => {
-          const previewText = (post.text || "").trim().slice(0, 18) || (post.images.length ? `含 ${post.images.length} 张配图` : "空白动态");
-          return `<option value="${post.id}">动态 #${idx + 1} · ${escapeHtml(previewText)}</option>`;
-        }).join("");
-        if (state.posts.some(p => p.id === prevVal)) {
-          selectEl.value = prevVal;
+      function updateExportSelectionSummary() {
+        const validSelected = state.posts.filter(p => exportSelectedPostIds.has(p.id));
+        const parts = [];
+        if (exportIncludeHeader) parts.push("主页头部");
+        if (validSelected.length > 0) parts.push(`${validSelected.length} 条动态`);
+        const summaryEl = document.getElementById("export-selection-summary");
+        if (summaryEl) {
+          summaryEl.textContent = parts.length ? `已选：${parts.join(" + ")}` : "未选择内容";
         }
       }
 
+      function renderExportChecklist() {
+        const listEl = document.getElementById("export-posts-checklist");
+        const headerCb = document.getElementById("export-include-header");
+        if (headerCb) headerCb.checked = exportIncludeHeader;
+
+        if (!state.posts.length) {
+          listEl.innerHTML = `<div class="text-[11px] text-zinc-400 text-center py-3">当前还没有动态</div>`;
+          updateExportSelectionSummary();
+          return;
+        }
+
+        listEl.innerHTML = state.posts.map((post, idx) => {
+          const checked = exportSelectedPostIds.has(post.id);
+          const thumb = post.images && post.images[0] ? post.images[0].src : "";
+          const previewText = (post.text || "").trim().slice(0, 22) || (post.images.length ? `含 ${post.images.length} 张配图` : "空白动态");
+          return `
+            <label class="flex items-center gap-2.5 p-2 rounded-xl border cursor-pointer transition-colors ${checked ? "border-zinc-900 bg-zinc-50" : "border-zinc-200 bg-white hover:bg-zinc-50/70"}">
+              <input type="checkbox" data-export-post-cb="${post.id}" ${checked ? "checked" : ""} class="w-4 h-4 rounded border-zinc-300 accent-zinc-900 shrink-0" />
+              ${thumb
+                ? `<img src="${thumb}" alt="缩略图" class="w-8 h-8 rounded object-cover shrink-0 bg-zinc-100" />`
+                : `<div class="w-8 h-8 rounded bg-zinc-100 text-zinc-400 flex items-center justify-center shrink-0 text-[10px]">#${idx + 1}</div>`
+              }
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-semibold text-zinc-900">动态 #${idx + 1}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500">${escapeHtml(LAYOUT_LABELS[post.layout] || "")}</span>
+                </div>
+                <div class="text-[11px] text-zinc-500 truncate mt-0.5">${escapeHtml(previewText)}</div>
+              </div>
+            </label>`;
+        }).join("");
+        updateExportSelectionSummary();
+      }
+
       function openExportImageModal() {
-        updateExportImgModalUI();
+        // Default: include header + select all existing posts (user can freely uncheck any)
+        exportIncludeHeader = true;
+        exportSelectedPostIds = new Set(state.posts.map(p => p.id));
+        renderExportChecklist();
         document.getElementById("export-preview-box").classList.add("hidden");
         document.getElementById("btn-download-png").classList.add("hidden");
         document.getElementById("btn-download-png").classList.remove("inline-flex");
+        document.getElementById("btn-generate-png-text").textContent = "生成预览图片";
         document.getElementById("export-img-modal").classList.remove("hidden");
       }
 
@@ -2961,22 +2993,33 @@
         host.style.color = "#18181b";
         wrapper.appendChild(host);
 
-        let html = "";
-        let filenamePrefix = state.platform === "wechat" ? "wechat" : "twitter";
-        if (exportImgScope === "full") {
-          html = state.platform === "wechat" ? renderWechatFeed(true) : renderTwitterFeed(true);
-          filenamePrefix += "-full-profile";
-        } else if (exportImgScope === "header") {
-          html = `<div class="bg-white pb-4">${state.platform === "wechat" ? renderWechatHeader(true) : renderTwitterHeader(true)}</div>`;
-          filenamePrefix += "-profile-header";
-        } else {
-          const targetId = document.getElementById("select-export-post").value || state.selectedPostId;
-          const post = state.posts.find(p => p.id === targetId) || getSelectedPost();
-          if (post) {
-            html = `<div class="bg-white">${state.platform === "wechat" ? renderWechatPostCard(post, true) : renderTwitterPostCard(post, true)}</div>`;
-          }
-          filenamePrefix += "-single-post";
+        const chosenPosts = state.posts.filter(p => exportSelectedPostIds.has(p.id));
+        if (!exportIncludeHeader && chosenPosts.length === 0) {
+          genBtn.disabled = false;
+          genText.textContent = "生成预览图片";
+          showToast("请至少勾选「主页头部」或 1 条动态");
+          return;
         }
+
+        const isWechat = state.platform === "wechat";
+        let filenamePrefix = isWechat ? "wechat" : "twitter";
+        if (exportIncludeHeader && chosenPosts.length === 0) {
+          filenamePrefix += "-profile-header";
+        } else if (!exportIncludeHeader && chosenPosts.length === 1) {
+          filenamePrefix += "-single-post";
+        } else if (exportIncludeHeader && chosenPosts.length === state.posts.length) {
+          filenamePrefix += "-full-profile";
+        } else {
+          filenamePrefix += `-custom-${chosenPosts.length}posts`;
+        }
+
+        const headerHtml = exportIncludeHeader
+          ? (isWechat ? renderWechatHeader(true) : renderTwitterHeader(true))
+          : "";
+        const postsHtml = chosenPosts.length > 0
+          ? `<div class="divide-y divide-zinc-100">${chosenPosts.map(post => isWechat ? renderWechatPostCard(post, true) : renderTwitterPostCard(post, true)).join("")}</div>`
+          : "";
+        const html = `<div class="bg-white ${chosenPosts.length === 0 ? "pb-4" : "pb-3"}">${headerHtml}${postsHtml}</div>`;
 
         host.innerHTML = html;
         document.body.appendChild(wrapper);
@@ -3073,11 +3116,30 @@
           document.getElementById("export-img-modal").classList.add("hidden");
         }
       });
-      document.querySelectorAll(".export-scope-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          exportImgScope = btn.dataset.exportScope;
-          updateExportImgModalUI();
-        });
+      document.getElementById("export-include-header").addEventListener("change", (e) => {
+        exportIncludeHeader = e.target.checked;
+        updateExportSelectionSummary();
+      });
+      document.getElementById("export-posts-checklist").addEventListener("change", (e) => {
+        const cb = e.target.closest("[data-export-post-cb]");
+        if (!cb) return;
+        const pid = cb.dataset.exportPostCb;
+        if (cb.checked) exportSelectedPostIds.add(pid);
+        else exportSelectedPostIds.delete(pid);
+        renderExportChecklist();
+      });
+      document.getElementById("btn-export-select-all").addEventListener("click", () => {
+        exportSelectedPostIds = new Set(state.posts.map(p => p.id));
+        renderExportChecklist();
+      });
+      document.getElementById("btn-export-select-current").addEventListener("click", () => {
+        const curr = getSelectedPost();
+        exportSelectedPostIds = new Set(curr ? [curr.id] : []);
+        renderExportChecklist();
+      });
+      document.getElementById("btn-export-select-none").addEventListener("click", () => {
+        exportSelectedPostIds = new Set();
+        renderExportChecklist();
       });
       document.getElementById("btn-generate-png").addEventListener("click", generateExportPng);
 
