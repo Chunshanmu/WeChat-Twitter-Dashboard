@@ -717,6 +717,10 @@
           <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
           <span>导入存档</span>
         </button>
+        <button id="btn-clear-all-bottom" type="button" class="px-3.5 py-2 rounded-full bg-white hover:bg-red-50 border border-red-200 shadow-sm text-xs font-medium text-red-600 flex items-center gap-1.5 transition-colors">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>一键清除所有排版</span>
+        </button>
       </div>
     </section>
   </main>
@@ -844,6 +848,31 @@
           <span id="sheet-pol-border-val" class="font-medium text-zinc-800">8px</span>
         </div>
         <input id="sheet-pol-border" type="range" min="0" max="18" step="1" value="8" class="w-full accent-zinc-900" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Clear All Modal -->
+  <div id="clear-all-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-zinc-200 max-w-sm w-full overflow-hidden">
+      <div class="p-5 space-y-2.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-sm font-semibold text-zinc-900">确认清除所有排版？</h2>
+        </div>
+        <p class="text-xs text-zinc-500 leading-relaxed">
+          确认后将清空当前所有的动态、配图、文案、点赞评论以及主页资料，恢复到初始空白状态。如需保留当前内容，建议先点击「保存存档」。
+        </p>
+      </div>
+      <div class="px-5 py-3 bg-zinc-50 border-t border-zinc-200 flex items-center justify-end gap-2">
+        <button id="btn-clear-all-cancel" type="button" class="px-3.5 py-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-medium text-zinc-700 transition-colors">
+          取消
+        </button>
+        <button id="btn-clear-all-confirm" type="button" class="px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-xs font-semibold text-white transition-colors">
+          确认清除全部
+        </button>
       </div>
     </div>
   </div>
@@ -3178,27 +3207,25 @@
         }
       });
 
-      // Two-tap safe Reset All button (no native confirm dialog)
-      let resetConfirmTimer = null;
-      let resetArmed = false;
-      const btnResetAll = document.getElementById("btn-reset-all");
-      btnResetAll.addEventListener("click", async () => {
-        if (!resetArmed) {
-          resetArmed = true;
-          btnResetAll.textContent = "再次点击确认清空";
-          btnResetAll.className = "text-red-600 font-semibold transition-colors";
-          clearTimeout(resetConfirmTimer);
-          resetConfirmTimer = setTimeout(() => {
-            resetArmed = false;
-            btnResetAll.textContent = "清空重置";
-            btnResetAll.className = "text-zinc-400 hover:text-red-500 transition-colors";
-          }, 3000);
-          return;
-        }
-        resetArmed = false;
-        clearTimeout(resetConfirmTimer);
-        btnResetAll.textContent = "清空重置";
-        btnResetAll.className = "text-zinc-400 hover:text-red-500 transition-colors";
+      // Clear All Confirmation Modal (triggered from bottom "一键清除所有排版" & editor "清空重置")
+      const clearAllModal = document.getElementById("clear-all-modal");
+      function openClearAllModal() {
+        clearAllModal.classList.remove("hidden");
+      }
+      function closeClearAllModal() {
+        clearAllModal.classList.add("hidden");
+      }
+
+      document.getElementById("btn-reset-all").addEventListener("click", openClearAllModal);
+      document.getElementById("btn-clear-all-bottom").addEventListener("click", openClearAllModal);
+      document.getElementById("btn-clear-all-cancel").addEventListener("click", closeClearAllModal);
+      clearAllModal.addEventListener("click", (e) => {
+        if (e.target === clearAllModal) closeClearAllModal();
+      });
+
+      document.getElementById("btn-clear-all-confirm").addEventListener("click", async () => {
+        closeClearAllModal();
+        commitHistoryNow();
         await clearAutoSavedState();
         state.profile = {
           name: "",
@@ -3237,7 +3264,8 @@
         state.selectedPostId = state.posts[0].id;
         closeInsetTweakSheet();
         renderAll();
-        showToast("已清空所有内容并重置本地缓存");
+        commitHistoryNow();
+        showToast("已清除所有排版，如需反悔可点「撤回」恢复");
       });
 
       // Initial restore from local auto-save & render
