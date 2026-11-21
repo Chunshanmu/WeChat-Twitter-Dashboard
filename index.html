@@ -241,56 +241,46 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- Top Navigation Toolbar -->
-  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-zinc-200 px-3 sm:px-5 h-14 flex items-center justify-between gap-2">
+  <!-- Top Navigation Toolbar (compact & overflow-safe on all phone widths) -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-zinc-200 px-2.5 sm:px-5 h-14 flex items-center justify-between gap-1.5 sm:gap-2 overflow-hidden">
     <!-- Platform Switcher -->
-    <div class="flex items-center bg-zinc-100 p-1 rounded-lg border border-zinc-200/80 shrink-0" role="tablist" aria-label="平台风格切换">
-      <button id="btn-platform-wechat" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5">
-        <i data-lucide="aperture" class="w-3.5 h-3.5"></i>
+    <div class="flex items-center bg-zinc-100 p-0.5 sm:p-1 rounded-lg border border-zinc-200/80 min-w-0 shrink" role="tablist" aria-label="平台风格切换">
+      <button id="btn-platform-wechat" type="button" class="px-2 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+        <i data-lucide="aperture" class="w-3.5 h-3.5 shrink-0"></i>
         <span>微信朋友圈</span>
       </button>
-      <button id="btn-platform-twitter" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5">
-        <i data-lucide="at-sign" class="w-3.5 h-3.5"></i>
+      <button id="btn-platform-twitter" type="button" class="px-2 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+        <i data-lucide="at-sign" class="w-3.5 h-3.5 shrink-0"></i>
         <span>推特 / X</span>
       </button>
     </div>
 
     <!-- Right Controls -->
-    <div class="flex items-center gap-2 shrink-0">
-      <div class="hidden lg:flex items-center bg-zinc-100 p-1 rounded-lg border border-zinc-200/80">
-        <button id="btn-view-mobile" type="button" title="手机端宽度 (390px)" class="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all">
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <div class="hidden md:flex items-center bg-zinc-100 p-1 rounded-lg border border-zinc-200/80">
+        <button id="btn-view-mobile" type="button" title="手机端预览宽度 (390px)" class="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all">
           <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
           <span>手机</span>
         </button>
-        <button id="btn-view-desktop" type="button" title="桌面端宽度 (560px)" class="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all">
+        <button id="btn-view-desktop" type="button" title="宽屏预览宽度 (560px)" class="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all">
           <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
           <span>宽屏</span>
         </button>
       </div>
-      <div class="flex items-center bg-zinc-100 p-0.5 rounded-lg border border-zinc-200/80">
-        <button id="btn-undo" type="button" disabled title="撤回上一步 (Ctrl+Z)" aria-label="撤回上一步"
-          class="w-7 h-7 rounded-md flex items-center justify-center text-zinc-700 hover:bg-white disabled:opacity-35 disabled:hover:bg-transparent transition-colors">
-          <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
-        </button>
-        <button id="btn-redo" type="button" disabled title="恢复上一步 (Ctrl+Y / Ctrl+Shift+Z)" aria-label="恢复上一步"
-          class="w-7 h-7 rounded-md flex items-center justify-center text-zinc-700 hover:bg-white disabled:opacity-35 disabled:hover:bg-transparent transition-colors">
-          <i data-lucide="redo-2" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-      <button id="btn-new-post-top" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
-        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+      <button id="btn-new-post-top" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap">
+        <i data-lucide="plus" class="w-3.5 h-3.5 shrink-0"></i>
         <span class="hidden sm:inline">发新动态</span>
         <span class="sm:hidden">发帖</span>
       </button>
-      <button id="btn-export-image" type="button" title="导出主页或单条动态为 PNG 图片" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
-        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+      <button id="btn-export-image" type="button" title="导出主页或单条动态为固定宽度高清 PNG 图片" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap">
+        <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
         <span class="hidden sm:inline">导出图片</span>
       </button>
     </div>
   </header>
 
-  <!-- Mobile View Switcher Bar (< 1024px) -->
-  <div class="lg:hidden bg-white border-b border-zinc-200 px-3 py-2 flex gap-2 sticky top-14 z-20">
+  <!-- Mobile View Switcher Bar (< 768px only; desktop/tablet shows side-by-side two-column layout) -->
+  <div class="md:hidden bg-white border-b border-zinc-200 px-3 py-2 flex gap-2 sticky top-14 z-20">
     <button id="btn-mobile-tab-preview" type="button" class="flex-1 py-2 rounded-lg text-xs font-medium text-center transition-colors">
       实时预览
     </button>
@@ -300,10 +290,10 @@
   </div>
 
   <!-- Main Workspace -->
-  <main class="flex-1 flex flex-col lg:flex-row max-w-[1440px] w-full mx-auto">
+  <main class="flex-1 flex flex-col md:flex-row max-w-[1440px] w-full mx-auto min-w-0">
 
     <!-- LEFT PANEL: Editor & Upload Studio -->
-    <aside id="editor-panel" class="w-full lg:w-[400px] xl:w-[420px] shrink-0 bg-white border-r border-zinc-200 flex flex-col lg:h-[calc(100vh-3.5rem)] lg:sticky lg:top-14 overflow-y-auto">
+    <aside id="editor-panel" class="w-full md:w-[350px] lg:w-[400px] xl:w-[420px] shrink-0 bg-white md:border-r border-zinc-200 flex flex-col md:h-[calc(100vh-3.5rem)] md:sticky md:top-14 overflow-y-auto">
       <!-- Editor Sub-tabs -->
       <div class="flex border-b border-zinc-200 px-4 pt-3 gap-4 shrink-0 bg-white sticky top-0 z-10">
         <button id="tab-editor-post" type="button" class="pb-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5">
@@ -318,20 +308,34 @@
 
       <!-- SUB-TAB 1: POST EDITOR -->
       <div id="pane-editor-post" class="p-4 space-y-5 flex-1">
-        <!-- Active Post Selector Bar -->
-        <div class="flex items-center justify-between gap-2 bg-zinc-50 border border-zinc-200/80 rounded-xl px-3 py-2">
-          <div class="min-w-0">
-            <div class="text-[11px] text-zinc-500">当前正在编辑</div>
-            <div id="editing-post-label" class="text-xs font-semibold text-zinc-900 truncate">动态 #1</div>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button id="btn-clear-current-post" type="button" title="一键清空当前动态的图片、文案与排版参数（支持撤回）"
-              class="px-2 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium transition-colors flex items-center gap-1">
-              <i data-lucide="eraser" class="w-3 h-3"></i>
-              <span>清空排版</span>
+        <!-- Active Post Selector & Quick History Bar -->
+        <div class="bg-zinc-50 border border-zinc-200/80 rounded-xl px-3 py-2.5 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="text-[11px] text-zinc-500">当前正在编辑</div>
+              <div id="editing-post-label" class="text-xs font-semibold text-zinc-900 truncate">动态 #1</div>
+            </div>
+            <button id="btn-create-blank-post" type="button" class="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-[11px] font-medium hover:bg-zinc-800 transition-colors shrink-0">
+              + 新建动态
             </button>
-            <button id="btn-create-blank-post" type="button" class="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-[11px] font-medium hover:bg-zinc-800 transition-colors">
-              + 新建
+          </div>
+          <div class="flex items-center justify-between gap-1.5 pt-2 border-t border-zinc-200/70">
+            <div class="flex items-center gap-1">
+              <button type="button" data-action-undo="true" disabled title="撤回上一步 (Ctrl+Z)"
+                class="btn-undo-control px-2 py-1 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100 disabled:opacity-40 text-zinc-700 text-[11px] font-medium flex items-center gap-1 transition-colors">
+                <i data-lucide="undo-2" class="w-3 h-3"></i>
+                <span>撤回</span>
+              </button>
+              <button type="button" data-action-redo="true" disabled title="恢复上一步 (Ctrl+Y / Ctrl+Shift+Z)"
+                class="btn-redo-control px-2 py-1 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100 disabled:opacity-40 text-zinc-700 text-[11px] font-medium flex items-center gap-1 transition-colors">
+                <i data-lucide="redo-2" class="w-3 h-3"></i>
+                <span>恢复</span>
+              </button>
+            </div>
+            <button id="btn-clear-current-post" type="button" title="一键清空当前动态的图片、文案与排版参数（支持撤回）"
+              class="px-2 py-1 rounded-lg border border-zinc-200 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-zinc-600 text-[11px] font-medium flex items-center gap-1 transition-colors">
+              <i data-lucide="eraser" class="w-3 h-3"></i>
+              <span>清空当前排版</span>
             </button>
           </div>
         </div>
@@ -673,10 +677,20 @@
 
     <!-- RIGHT PANEL: Live Social Feed Preview Stage -->
     <section id="preview-panel" class="flex-1 flex flex-col items-center py-4 sm:py-6 px-2 sm:px-6 overflow-y-auto">
-      <!-- Helpful quick status bar -->
-      <div class="w-full max-w-[560px] mb-3 flex items-center justify-between text-[11px] text-zinc-500 px-1">
-        <span>点击背景/头像或动态卡片即可直接导入图片、编辑排版与互动数据</span>
-        <span id="post-total-counter" class="font-medium text-zinc-700 shrink-0 ml-2">1 条动态</span>
+      <!-- Helpful quick status bar + Undo/Redo -->
+      <div class="w-full max-w-[560px] mb-3 flex items-center justify-between gap-2 text-[11px] text-zinc-500 px-1">
+        <span class="truncate">点击背景、头像或卡片即可编辑排版</span>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" data-action-undo="true" disabled title="撤回上一步 (Ctrl+Z)"
+            class="btn-undo-control w-7 h-7 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-35 text-zinc-700 flex items-center justify-center transition-colors">
+            <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <button type="button" data-action-redo="true" disabled title="恢复上一步 (Ctrl+Y / Ctrl+Shift+Z)"
+            class="btn-redo-control w-7 h-7 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-35 text-zinc-700 flex items-center justify-center transition-colors">
+            <i data-lucide="redo-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <span id="post-total-counter" class="font-medium text-zinc-700 ml-0.5">1 条动态</span>
+        </div>
       </div>
 
       <!-- Simulated Phone / Desktop Feed Container -->
@@ -1381,11 +1395,11 @@
         const btnWc = document.getElementById("btn-platform-wechat");
         const btnTw = document.getElementById("btn-platform-twitter");
         btnWc.className = state.platform === "wechat"
-          ? "px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-zinc-900 shadow-sm flex items-center gap-1.5"
-          : "px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-500 hover:text-zinc-800 flex items-center gap-1.5";
+          ? "px-2 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-semibold bg-white text-zinc-900 shadow-sm flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
+          : "px-2 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium text-zinc-500 hover:text-zinc-800 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap";
         btnTw.className = state.platform === "twitter"
-          ? "px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-zinc-900 shadow-sm flex items-center gap-1.5"
-          : "px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-500 hover:text-zinc-800 flex items-center gap-1.5";
+          ? "px-2 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-semibold bg-white text-zinc-900 shadow-sm flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
+          : "px-2 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium text-zinc-500 hover:text-zinc-800 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap";
 
         // Viewport buttons
         const btnMob = document.getElementById("btn-view-mobile");
@@ -1400,8 +1414,8 @@
         const shell = document.getElementById("preview-shell");
         shell.style.maxWidth = state.viewport === "mobile" ? "390px" : "560px";
 
-        // Mobile tabs (<1024px)
-        const isLarge = window.innerWidth >= 1024;
+        // Mobile tabs (<768px only; >=768px always shows side-by-side two columns)
+        const isLarge = window.innerWidth >= 768;
         const editorEl = document.getElementById("editor-panel");
         const previewEl = document.getElementById("preview-panel");
         if (!isLarge) {
@@ -1844,10 +1858,12 @@
       }
 
       function updateUndoRedoButtons() {
-        const btnUndo = document.getElementById("btn-undo");
-        const btnRedo = document.getElementById("btn-redo");
-        if (btnUndo) btnUndo.disabled = historyPast.length === 0;
-        if (btnRedo) btnRedo.disabled = historyFuture.length === 0;
+        document.querySelectorAll(".btn-undo-control").forEach(btn => {
+          btn.disabled = historyPast.length === 0;
+        });
+        document.querySelectorAll(".btn-redo-control").forEach(btn => {
+          btn.disabled = historyFuture.length === 0;
+        });
       }
 
       function commitHistoryNow() {
@@ -2231,8 +2247,12 @@
         renderEditorPanel();
       });
 
-      document.getElementById("btn-undo").addEventListener("click", performUndo);
-      document.getElementById("btn-redo").addEventListener("click", performRedo);
+      document.querySelectorAll("[data-action-undo]").forEach(btn => {
+        btn.addEventListener("click", performUndo);
+      });
+      document.querySelectorAll("[data-action-redo]").forEach(btn => {
+        btn.addEventListener("click", performRedo);
+      });
 
       // Global Undo / Redo keyboard shortcuts (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y)
       document.addEventListener("keydown", (e) => {
@@ -2896,7 +2916,8 @@
         genBtn.disabled = true;
         genText.textContent = "正在渲染高清图片...";
 
-        const exportWidth = state.viewport === "mobile" ? 390 : 560;
+        // Fixed mobile social-feed export width (390px logical -> 780px @ 2x) regardless of screen width
+        const exportWidth = 390;
         const wrapper = document.createElement("div");
         wrapper.style.position = "fixed";
         wrapper.style.left = "-99999px";
@@ -3139,9 +3160,9 @@
         e.target.value = "";
       });
 
-      let lastIsLarge = window.innerWidth >= 1024;
+      let lastIsLarge = window.innerWidth >= 768;
       window.addEventListener("resize", () => {
-        const nowIsLarge = window.innerWidth >= 1024;
+        const nowIsLarge = window.innerWidth >= 768;
         if (nowIsLarge !== lastIsLarge) {
           lastIsLarge = nowIsLarge;
           const editorEl = document.getElementById("editor-panel");
