@@ -267,6 +267,16 @@
           <span>宽屏</span>
         </button>
       </div>
+      <div class="flex items-center bg-zinc-100 p-0.5 rounded-lg border border-zinc-200/80">
+        <button id="btn-undo" type="button" disabled title="撤回上一步 (Ctrl+Z)" aria-label="撤回上一步"
+          class="w-7 h-7 rounded-md flex items-center justify-center text-zinc-700 hover:bg-white disabled:opacity-35 disabled:hover:bg-transparent transition-colors">
+          <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+        </button>
+        <button id="btn-redo" type="button" disabled title="恢复上一步 (Ctrl+Y / Ctrl+Shift+Z)" aria-label="恢复上一步"
+          class="w-7 h-7 rounded-md flex items-center justify-center text-zinc-700 hover:bg-white disabled:opacity-35 disabled:hover:bg-transparent transition-colors">
+          <i data-lucide="redo-2" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
       <button id="btn-new-post-top" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
         <span class="hidden sm:inline">发新动态</span>
@@ -315,8 +325,13 @@
             <div id="editing-post-label" class="text-xs font-semibold text-zinc-900 truncate">动态 #1</div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
+            <button id="btn-clear-current-post" type="button" title="一键清空当前动态的图片、文案与排版参数（支持撤回）"
+              class="px-2 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium transition-colors flex items-center gap-1">
+              <i data-lucide="eraser" class="w-3 h-3"></i>
+              <span>清空排版</span>
+            </button>
             <button id="btn-create-blank-post" type="button" class="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-[11px] font-medium hover:bg-zinc-800 transition-colors">
-              + 新建动态
+              + 新建
             </button>
           </div>
         </div>
@@ -1773,6 +1788,8 @@
           updateAutoSaveStatus("已恢复上次本地进度", false);
         }
         autoSaveReady = true;
+        lastCommittedSnap = cloneStateForHistory();
+        updateUndoRedoButtons();
         renderAll();
       }
 
@@ -1792,6 +1809,123 @@
         } catch (_) {}
       }
 
+      // Undo / Redo History Engine (fast reference-sharing snapshots, zero image duplication)
+      const MAX_HISTORY = 35;
+      let historyPast = [];
+      let historyFuture = [];
+      let lastCommittedSnap = null;
+      let historyDebounceTimer = null;
+      let isRestoringHistory = false;
+
+      function cloneStateForHistory() {
+        return {
+          platform: state.platform,
+          selectedPostId: state.selectedPostId,
+          profile: { ...state.profile },
+          posts: state.posts.map(p => ({
+            ...p,
+            comments: (p.comments || []).map(c => ({ ...c })),
+            images: (p.images || []).map(img => ({ ...img }))
+          }))
+        };
+      }
+
+      function snapshotKey(snap) {
+        if (!snap) return "";
+        return JSON.stringify({
+          platform: snap.platform,
+          selectedPostId: snap.selectedPostId,
+          profile: { ...snap.profile, avatar: snap.profile.avatar ? snap.profile.avatar.length : 0, cover: snap.profile.cover ? snap.profile.cover.length : 0 },
+          posts: snap.posts.map(p => ({
+            ...p,
+            images: (p.images || []).map(img => img.id)
+          }))
+        });
+      }
+
+      function updateUndoRedoButtons() {
+        const btnUndo = document.getElementById("btn-undo");
+        const btnRedo = document.getElementById("btn-redo");
+        if (btnUndo) btnUndo.disabled = historyPast.length === 0;
+        if (btnRedo) btnRedo.disabled = historyFuture.length === 0;
+      }
+
+      function commitHistoryNow() {
+        if (!autoSaveReady || isRestoringHistory) return;
+        const curr = cloneStateForHistory();
+        if (!lastCommittedSnap) {
+          lastCommittedSnap = curr;
+          updateUndoRedoButtons();
+          return;
+        }
+        if (snapshotKey(curr) === snapshotKey(lastCommittedSnap)) return;
+        historyPast.push(lastCommittedSnap);
+        if (historyPast.length > MAX_HISTORY) {
+          historyPast.shift();
+        }
+        lastCommittedSnap = curr;
+        historyFuture = [];
+        updateUndoRedoButtons();
+      }
+
+      function scheduleHistoryCommit() {
+        if (!autoSaveReady || isRestoringHistory) return;
+        clearTimeout(historyDebounceTimer);
+        historyDebounceTimer = setTimeout(commitHistoryNow, 300);
+      }
+
+      function applyHistorySnapshot(snap) {
+        isRestoringHistory = true;
+        clearTimeout(historyDebounceTimer);
+        state.platform = snap.platform;
+        state.profile = { ...snap.profile };
+        state.posts = snap.posts.map(p => ({
+          ...p,
+          comments: (p.comments || []).map(c => ({ ...c })),
+          images: (p.images || []).map(img => ({ ...img }))
+        }));
+        state.selectedPostId = (snap.selectedPostId && state.posts.some(p => p.id === snap.selectedPostId))
+          ? snap.selectedPostId
+          : (state.posts[0] ? state.posts[0].id : null);
+        lastCommittedSnap = cloneStateForHistory();
+        renderAll();
+        if (typeof syncInsetTweakSheetUI === "function") {
+          syncInsetTweakSheetUI();
+        }
+        isRestoringHistory = false;
+        updateUndoRedoButtons();
+      }
+
+      function performUndo() {
+        clearTimeout(historyDebounceTimer);
+        // Capture any pending unsaved edit right before undoing
+        const curr = cloneStateForHistory();
+        if (lastCommittedSnap && snapshotKey(curr) !== snapshotKey(lastCommittedSnap)) {
+          historyPast.push(lastCommittedSnap);
+          lastCommittedSnap = curr;
+        }
+        if (historyPast.length === 0) {
+          showToast("没有可撤回的操作");
+          return;
+        }
+        const prev = historyPast.pop();
+        historyFuture.push(cloneStateForHistory());
+        applyHistorySnapshot(prev);
+        showToast("已撤回上一步");
+      }
+
+      function performRedo() {
+        clearTimeout(historyDebounceTimer);
+        if (historyFuture.length === 0) {
+          showToast("没有可恢复的操作");
+          return;
+        }
+        const next = historyFuture.pop();
+        historyPast.push(cloneStateForHistory());
+        applyHistorySnapshot(next);
+        showToast("已恢复上一步");
+      }
+
       // Master Render
       function renderAll() {
         const mount = document.getElementById("feed-mount");
@@ -1802,6 +1936,7 @@
         }
         requestAnimationFrame(syncAllPolaroidStages);
         scheduleAutoSave();
+        scheduleHistoryCommit();
       }
 
       // Lightbox controls
@@ -2096,6 +2231,54 @@
         renderEditorPanel();
       });
 
+      document.getElementById("btn-undo").addEventListener("click", performUndo);
+      document.getElementById("btn-redo").addEventListener("click", performRedo);
+
+      // Global Undo / Redo keyboard shortcuts (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y)
+      document.addEventListener("keydown", (e) => {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+        const tag = (document.activeElement && document.activeElement.tagName || "").toUpperCase();
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+        const key = (e.key || "").toLowerCase();
+        if (key === "z" && !e.shiftKey) {
+          e.preventDefault();
+          performUndo();
+        } else if ((key === "z" && e.shiftKey) || (key === "y" && !e.shiftKey)) {
+          e.preventDefault();
+          performRedo();
+        }
+      });
+
+      // One-click Clear Current Post layout & content (undoable!)
+      document.getElementById("btn-clear-current-post").addEventListener("click", () => {
+        const p = getSelectedPost();
+        if (!p) return;
+        commitHistoryNow();
+        p.layout = "asymmetric";
+        p.text = "";
+        p.location = "";
+        p.time = "刚刚";
+        p.likesText = "";
+        p.likedByMe = false;
+        p.repliesCount = "0";
+        p.repostsCount = "0";
+        p.likesCount = "0";
+        p.bookmarked = false;
+        p.polaroidRatio = "34";
+        p.polaroidSize = 46;
+        p.polaroidBorder = 8;
+        p.polaroidX = 52;
+        p.polaroidY = 62;
+        p.polaroidTilt = false;
+        p.filmHeight = 236;
+        p.comments = [];
+        p.images = [];
+        closeInsetTweakSheet();
+        renderAll();
+        commitHistoryNow();
+        showToast("已清空当前动态排版，可点「撤回」恢复");
+      });
+
       document.getElementById("btn-new-post-top").addEventListener("click", createNewPost);
       document.getElementById("btn-create-blank-post").addEventListener("click", createNewPost);
       document.getElementById("btn-add-post-bottom").addEventListener("click", createNewPost);
@@ -2255,6 +2438,7 @@
           mount.innerHTML = state.platform === "wechat" ? renderWechatFeed() : renderTwitterFeed();
           if (window.lucide) window.lucide.createIcons();
           scheduleAutoSave();
+          scheduleHistoryCommit();
         }
       });
 
@@ -2409,6 +2593,7 @@
         syncInsetTweakSheetUI();
         renderEditorPanel();
         scheduleAutoSave();
+        scheduleHistoryCommit();
       }
 
       function openInsetTweakSheet(postId) {
