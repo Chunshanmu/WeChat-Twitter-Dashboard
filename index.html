@@ -272,9 +272,9 @@
         <span class="hidden sm:inline">发新动态</span>
         <span class="sm:hidden">发帖</span>
       </button>
-      <button id="btn-export-image" type="button" title="导出主页或单条动态为固定宽度高清 PNG 图片" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap">
+      <button id="btn-export-primary" type="button" title="导出图片或自适应组件代码" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap">
         <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
-        <span class="hidden sm:inline">导出图片</span>
+        <span id="btn-export-primary-label" class="hidden sm:inline">导出图片</span>
       </button>
     </div>
   </header>
@@ -294,15 +294,32 @@
 
     <!-- LEFT PANEL: Editor & Upload Studio -->
     <aside id="editor-panel" class="w-full md:w-[350px] lg:w-[400px] xl:w-[420px] shrink-0 bg-white md:border-r border-zinc-200 flex flex-col md:h-[calc(100vh-3.5rem)] md:sticky md:top-14 overflow-y-auto">
+      <!-- Work Mode Switcher (Image Mode vs Pure Code Mode) -->
+      <div class="px-4 pt-3 pb-2 bg-zinc-50/80 border-b border-zinc-200 shrink-0 space-y-1.5">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-semibold text-zinc-600">工作模式</span>
+          <div class="flex items-center bg-zinc-200/75 p-0.5 rounded-lg">
+            <button type="button" data-work-mode="image" class="work-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium transition-all">普通图片</button>
+            <button type="button" data-work-mode="code" class="work-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium transition-all">纯代码</button>
+          </div>
+        </div>
+        <div id="work-mode-hint" class="text-[10px] text-zinc-500 leading-snug">普通模式：支持相册上传与图床选图，可导出高清 PNG 图片</div>
+      </div>
+
       <!-- Editor Sub-tabs -->
-      <div class="flex border-b border-zinc-200 px-4 pt-3 gap-4 shrink-0 bg-white sticky top-0 z-10">
-        <button id="tab-editor-post" type="button" class="pb-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5">
+      <div class="flex border-b border-zinc-200 px-3 pt-2.5 gap-3 shrink-0 bg-white sticky top-0 z-10">
+        <button id="tab-editor-post" type="button" class="pb-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1 whitespace-nowrap">
           <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
-          <span>动态编辑与排版</span>
+          <span>动态排版</span>
         </button>
-        <button id="tab-editor-profile" type="button" class="pb-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5">
+        <button id="tab-editor-profile" type="button" class="pb-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1 whitespace-nowrap">
           <i data-lucide="user-circle" class="w-3.5 h-3.5"></i>
-          <span>人物资料与封面</span>
+          <span>人物资料</span>
+        </button>
+        <button id="tab-editor-gallery" type="button" class="pb-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1 whitespace-nowrap">
+          <i data-lucide="images" class="w-3.5 h-3.5"></i>
+          <span>图床图库</span>
+          <span id="gallery-tab-count" class="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-100 text-zinc-600">0</span>
         </button>
       </div>
 
@@ -347,16 +364,20 @@
             <span id="post-image-count-badge" class="text-[11px] text-zinc-500">0 张图片</span>
           </div>
 
-          <div id="post-dropzone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-400 rounded-xl p-4 text-center cursor-pointer transition-colors bg-zinc-50/60">
+          <div id="post-dropzone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-400 rounded-xl p-3.5 text-center cursor-pointer transition-colors bg-zinc-50/60">
             <input id="post-image-input" type="file" accept="image/*" multiple class="hidden" />
-            <div class="flex flex-col items-center gap-1.5 pointer-events-none">
-              <div class="w-9 h-9 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-600 shadow-sm">
+            <div class="flex flex-col items-center gap-1 pointer-events-none">
+              <div class="w-8 h-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-600 shadow-sm">
                 <i data-lucide="upload-cloud" class="w-4 h-4"></i>
               </div>
-              <div class="text-xs font-medium text-zinc-700">点击上传或将图片拖到这里</div>
-              <div class="text-[11px] text-zinc-400">自动识别 9:16 竖图 / 1:1 方图，本地浏览器即时渲染</div>
+              <div class="text-xs font-medium text-zinc-700">从本地相册上传或拖拽图片</div>
+              <div class="text-[11px] text-zinc-400">自动识别 9:16 竖图 / 1:1 方图</div>
             </div>
           </div>
+          <button id="btn-pick-post-gallery" type="button" class="w-full py-2 px-3 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100/70 text-indigo-700 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors">
+            <i data-lucide="images" class="w-3.5 h-3.5"></i>
+            <span>从图床图库选择配图</span>
+          </button>
 
           <!-- Uploaded Images List (Reorderable) -->
           <div id="editor-images-list" class="grid grid-cols-3 gap-2"></div>
@@ -584,10 +605,16 @@
             </div>
             <div class="flex-1 space-y-2">
               <input id="profile-avatar-input" type="file" accept="image/*" class="hidden" />
-              <button id="btn-upload-avatar" type="button" class="w-full py-1.5 px-3 rounded-lg border border-zinc-300 hover:bg-zinc-50 text-xs font-medium text-zinc-700 flex items-center justify-center gap-1.5">
-                <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-                <span>上传头像</span>
-              </button>
+              <div class="flex gap-1.5">
+                <button id="btn-upload-avatar" type="button" class="flex-1 py-1.5 px-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 text-xs font-medium text-zinc-700 flex items-center justify-center gap-1">
+                  <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                  <span>本地上传</span>
+                </button>
+                <button id="btn-pick-avatar-gallery" type="button" class="flex-1 py-1.5 px-2.5 rounded-lg border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100/70 text-xs font-medium text-indigo-700 flex items-center justify-center gap-1">
+                  <i data-lucide="images" class="w-3.5 h-3.5"></i>
+                  <span>图库选择</span>
+                </button>
+              </div>
               <div>
                 <div class="flex justify-between text-[10px] text-zinc-500">
                   <span>头像构图上下微调</span>
@@ -612,6 +639,17 @@
               <i data-lucide="image" class="w-4 h-4"></i>
               <span id="btn-upload-cover-text">点击导入背景图</span>
             </button>
+          </div>
+          <button id="btn-pick-cover-gallery" type="button" class="w-full py-1.5 px-3 rounded-lg border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100/70 text-xs font-medium text-indigo-700 flex items-center justify-center gap-1.5">
+            <i data-lucide="images" class="w-3.5 h-3.5"></i>
+            <span>从图床图库选择背景图</span>
+          </button>
+          <div>
+            <div class="flex justify-between text-[10px] text-zinc-500">
+              <span>背景图构图上下微调（适配微信 / 推特不同高度）</span>
+              <span id="cover-pos-val">50%</span>
+            </div>
+            <input id="input-cover-pos" type="range" min="0" max="100" value="50" class="w-full accent-zinc-900" />
           </div>
         </section>
 
@@ -652,6 +690,61 @@
         </section>
       </div>
 
+      <!-- SUB-TAB 3: IMAGE HOSTING GALLERY MANAGER -->
+      <div id="pane-editor-gallery" class="hidden p-4 space-y-4 flex-1">
+        <!-- Add Single / Batch Tabs -->
+        <section class="bg-zinc-50 border border-zinc-200/80 rounded-xl p-3 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-zinc-800">添加图床链接</span>
+            <div class="flex bg-white border border-zinc-200 rounded-lg p-0.5">
+              <button id="btn-gal-mode-single" type="button" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-900 text-white">单个添加</button>
+              <button id="btn-gal-mode-batch" type="button" class="px-2 py-0.5 rounded text-[11px] font-medium text-zinc-600">批量导入</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label for="select-gal-target-group" class="text-[11px] text-zinc-500 shrink-0">存入分组</label>
+            <select id="select-gal-target-group" class="flex-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:border-zinc-900"></select>
+          </div>
+
+          <!-- Single Add Form -->
+          <div id="gal-form-single" class="space-y-2">
+            <input id="input-gal-url" type="url" placeholder="粘贴图床直链，如 https://example.com/photo.jpg" class="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:border-zinc-900" />
+            <div class="flex gap-1.5">
+              <input id="input-gal-name" type="text" placeholder="备注名称（可选）" class="flex-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:border-zinc-900" />
+              <button id="btn-gal-add-single" type="button" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium shrink-0">加入图库</button>
+            </div>
+          </div>
+
+          <!-- Batch Add Form -->
+          <div id="gal-form-batch" class="hidden space-y-2">
+            <textarea id="input-gal-batch" rows="4" placeholder="每行粘贴一个图床链接，也支持「名称 | 链接」格式：&#10;https://img.example.com/1.jpg&#10;夜景立绘 | https://img.example.com/2.png" class="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:border-zinc-900 resize-y"></textarea>
+            <button id="btn-gal-add-batch" type="button" class="w-full py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium">一键批量加入图库</button>
+          </div>
+        </section>
+
+        <!-- Group Management -->
+        <section class="space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-zinc-800">图库分组</span>
+            <div class="flex items-center gap-1">
+              <input id="input-new-group-name" type="text" placeholder="新分组名" class="w-24 rounded-lg border border-zinc-200 px-2 py-1 text-[11px] focus:outline-none focus:border-zinc-900" />
+              <button id="btn-add-group" type="button" class="px-2 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-medium">+ 分组</button>
+            </div>
+          </div>
+          <div id="gal-group-pills" class="flex flex-wrap gap-1.5"></div>
+        </section>
+
+        <!-- Gallery Items Grid -->
+        <section class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span id="gal-list-title" class="text-xs font-semibold text-zinc-800">全部图片</span>
+            <button id="btn-delete-active-group" type="button" class="hidden text-[11px] text-red-500 hover:text-red-700">删除当前分组</button>
+          </div>
+          <div id="gal-items-grid" class="grid grid-cols-2 gap-2"></div>
+        </section>
+      </div>
+
       <!-- Sticky Footer in Editor: Auto-Save Status & Project Archive Save / Load -->
       <div class="shrink-0 border-t border-zinc-200 bg-zinc-50/90 px-4 py-2.5 space-y-2">
         <div class="flex items-center justify-between text-[11px]">
@@ -677,9 +770,12 @@
 
     <!-- RIGHT PANEL: Live Social Feed Preview Stage -->
     <section id="preview-panel" class="flex-1 flex flex-col items-center py-4 sm:py-6 px-2 sm:px-6 overflow-y-auto">
-      <!-- Helpful quick status bar + Undo/Redo -->
+      <!-- Helpful quick status bar + Mode Pill + Undo/Redo -->
       <div class="w-full max-w-[560px] mb-3 flex items-center justify-between gap-2 text-[11px] text-zinc-500 px-1">
-        <span class="truncate">点击背景、头像或卡片即可编辑排版</span>
+        <div class="flex items-center bg-white border border-zinc-200 p-0.5 rounded-lg shrink-0">
+          <button type="button" data-work-mode="image" class="work-mode-btn px-2 py-0.5 rounded text-[11px] font-medium transition-all">普通图片</button>
+          <button type="button" data-work-mode="code" class="work-mode-btn px-2 py-0.5 rounded text-[11px] font-medium transition-all">纯代码</button>
+        </div>
         <div class="flex items-center gap-1.5 shrink-0">
           <button type="button" data-action-undo="true" disabled title="撤回上一步 (Ctrl+Z)"
             class="btn-undo-control w-7 h-7 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-35 text-zinc-700 flex items-center justify-center transition-colors">
@@ -708,6 +804,10 @@
         <button id="btn-export-image-bottom" type="button" class="px-3.5 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm text-xs font-medium flex items-center gap-1.5 transition-colors">
           <i data-lucide="image-down" class="w-3.5 h-3.5"></i>
           <span>导出图片</span>
+        </button>
+        <button id="btn-export-code-bottom" type="button" class="px-3.5 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm text-xs font-medium flex items-center gap-1.5 transition-colors">
+          <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+          <span>导出代码</span>
         </button>
         <button id="btn-export-project-bottom" type="button" class="px-3.5 py-2 rounded-full bg-white hover:bg-zinc-50 border border-zinc-200 shadow-sm text-xs font-medium text-zinc-700 flex items-center gap-1.5 transition-colors">
           <i data-lucide="save" class="w-3.5 h-3.5"></i>
@@ -880,6 +980,138 @@
     </div>
   </div>
 
+  <!-- Gallery Picker Modal -->
+  <div id="gallery-picker-modal" class="hidden fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-zinc-200 max-w-lg w-full max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-200 flex items-center justify-between gap-2">
+        <div>
+          <h2 id="gallery-picker-title" class="text-sm font-semibold text-zinc-900">从图床图库选择图片</h2>
+          <p id="gallery-picker-subtitle" class="text-[11px] text-zinc-500">支持按分组筛选，选中后直接使用图床外链</p>
+        </div>
+        <button id="btn-gallery-picker-close" type="button" class="w-8 h-8 rounded-lg hover:bg-zinc-100 text-zinc-500 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="px-4 py-2.5 border-b border-zinc-100 flex items-center justify-between gap-2 bg-zinc-50/70">
+        <div id="picker-group-pills" class="flex flex-wrap gap-1.5 flex-1"></div>
+        <button id="btn-picker-goto-gallery" type="button" class="px-2.5 py-1 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-[11px] font-medium text-zinc-700 shrink-0">+ 管理图库</button>
+      </div>
+      <div id="picker-items-grid" class="p-4 grid grid-cols-3 gap-2.5 overflow-y-auto flex-1"></div>
+      <div id="picker-footer" class="px-4 py-3 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between gap-2">
+        <span id="picker-selected-count" class="text-xs text-zinc-600">已选 0 张</span>
+        <div class="flex items-center gap-2">
+          <button id="btn-picker-cancel" type="button" class="px-3 py-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100 text-xs font-medium text-zinc-700">取消</button>
+          <button id="btn-picker-confirm" type="button" class="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold">确认添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Responsive HTML/CSS Component Code Modal -->
+  <div id="export-code-modal" class="hidden fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-zinc-200 max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-4 sm:px-5 py-3.5 border-b border-zinc-200 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-semibold text-zinc-900">导出自适应 HTML / CSS 组件代码</h2>
+          <p class="text-[11px] text-zinc-500">纯原生代码、零外部依赖，自动适配手机与桌面不同屏幕宽度</p>
+        </div>
+        <button id="btn-export-code-close" type="button" class="w-8 h-8 rounded-lg hover:bg-zinc-100 text-zinc-500 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 space-y-3.5 overflow-y-auto flex-1">
+        <!-- Warning banner if local non-URL images exist -->
+        <div id="code-export-warning" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800 leading-relaxed"></div>
+
+        <!-- Include Header & Max Width -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 cursor-pointer">
+            <span class="text-xs font-semibold text-zinc-800">包含主页头部</span>
+            <input id="code-include-header" type="checkbox" checked class="w-4 h-4 rounded border-zinc-300 accent-zinc-900" />
+          </label>
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-zinc-200 bg-zinc-50">
+            <label for="select-code-maxwidth" class="text-xs font-semibold text-zinc-800 shrink-0">自适应宽度</label>
+            <select id="select-code-maxwidth" class="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-800 focus:outline-none">
+              <option value="100%" selected>100% 铺满容器（无白边）</option>
+              <option value="440px">自适应（最大 440px）</option>
+              <option value="560px">自适应（最大 560px）</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Multi-select posts for code export -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-zinc-800">勾选要导出的动态</span>
+            <div class="flex items-center gap-1">
+              <button id="btn-code-select-all" type="button" class="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-medium text-zinc-700">全选</button>
+              <button id="btn-code-select-current" type="button" class="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-medium text-zinc-700">仅当前</button>
+              <button id="btn-code-select-none" type="button" class="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-medium text-zinc-700">全不选</button>
+            </div>
+          </div>
+          <div id="code-posts-checklist" class="max-h-32 overflow-y-auto space-y-1 pr-0.5"></div>
+        </div>
+
+        <!-- Generated Code Box -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-2 text-[11px] text-zinc-500">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-zinc-700 font-medium">
+              <input id="code-wrap-fence" type="checkbox" checked class="w-3.5 h-3.5 rounded border-zinc-300 accent-zinc-900" />
+              <span>包含 ```html 代码块标记</span>
+            </label>
+            <span id="code-char-count" class="font-mono text-[10px]">0 字符</span>
+          </div>
+          <div class="rounded-xl bg-zinc-950 p-3 max-h-52 overflow-auto border border-zinc-800">
+            <pre id="code-export-output" class="text-[11px] text-emerald-300 font-mono whitespace-pre-wrap break-all leading-relaxed"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 sm:px-5 py-3 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between gap-2">
+        <button id="btn-download-code-html" type="button" class="px-3.5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+          <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
+          <span>下载 .html</span>
+        </button>
+        <button id="btn-copy-exported-code" type="button" class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors">
+          <i data-lucide="clipboard-copy" class="w-3.5 h-3.5"></i>
+          <span>一键复制完整代码</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Quick-Tweak Panel for Cover Image (triggered by tapping cover in preview) -->
+  <div id="cover-tweak-sheet" class="hidden fixed bottom-3 left-3 right-3 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-md border border-zinc-200 rounded-2xl shadow-[0_14px_40px_rgba(15,23,42,0.18)] p-3.5 space-y-2.5">
+    <div class="flex items-center justify-between gap-2 pb-1 border-b border-zinc-100">
+      <div class="flex items-center gap-1.5 text-xs font-semibold text-zinc-900">
+        <i data-lucide="move" class="w-3.5 h-3.5 text-zinc-600"></i>
+        <span>背景图上下左右构图微调</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="btn-cover-sheet-replace" type="button" class="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-[11px] font-medium text-zinc-700 transition-colors">换背景</button>
+        <button id="btn-cover-sheet-reset" type="button" class="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-[11px] font-medium text-zinc-700 transition-colors">居中</button>
+        <button id="btn-cover-sheet-close" type="button" class="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-[11px] font-medium text-white transition-colors">完成</button>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+      <div>
+        <div class="flex justify-between text-[11px] text-zinc-500 mb-0.5">
+          <span>左右位置 X</span>
+          <span id="sheet-cov-x-val" class="font-medium text-zinc-800">50%</span>
+        </div>
+        <input id="sheet-cov-x" type="range" min="0" max="100" step="1" value="50" class="w-full accent-zinc-900" />
+      </div>
+      <div>
+        <div class="flex justify-between text-[11px] text-zinc-500 mb-0.5">
+          <span>上下位置 Y</span>
+          <span id="sheet-cov-y-val" class="font-medium text-zinc-800">50%</span>
+        </div>
+        <input id="sheet-cov-y" type="range" min="0" max="100" step="1" value="50" class="w-full accent-zinc-900" />
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div id="toast-root" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none"></div>
 
@@ -892,13 +1124,19 @@
         classic: "经典朋友圈裁切"
       };
 
+      let openWechatMenuPostId = null;
+      const DEFAULT_GALLERY_GROUPS = ["默认分组", "人物", "场景", "头像封面"];
       const state = {
+        workMode: "image", // "image" | "code"
         platform: "wechat", // "wechat" | "twitter"
         viewport: "mobile", // "mobile" | "desktop"
         mobileTab: "preview", // "preview" | "editor"
-        editorTab: "post", // "post" | "profile"
+        editorTab: "post", // "post" | "profile" | "gallery"
         twitterFeedTab: "posts", // "posts" | "media" | "likes"
         selectedPostId: "post-1",
+        galleryGroups: [...DEFAULT_GALLERY_GROUPS],
+        activeGalleryGroup: "ALL",
+        galleryImages: [],
         profile: {
           name: "",
           handle: "@username",
@@ -909,7 +1147,9 @@
           following: "0",
           avatar: "",
           avatarPosY: 18,
-          cover: ""
+          cover: "",
+          coverPosX: 50,
+          coverPosY: 50
         },
         posts: [
           {
@@ -1174,7 +1414,7 @@
           <div class="relative mb-10">
             <div ${isExport ? "" : 'data-quick-upload-cover="true"'} class="h-56 w-full bg-[#6f6f6f] overflow-hidden relative ${isExport ? "" : "cursor-pointer group"}">
               ${p.cover
-                ? `<img src="${p.cover}" alt="朋友圈背景" class="w-full h-full object-cover" />
+                ? `<img data-live-cover-img="true" src="${p.cover}" alt="朋友圈背景" class="w-full h-full object-cover" style="object-position: ${p.coverPosX ?? 50}% ${p.coverPosY ?? 50}%;" />
                    <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/45 to-transparent"></div>`
                 : (isExport
                     ? `<div class="w-full h-full bg-[#6f6f6f]"></div>`
@@ -1238,16 +1478,24 @@
                 ${mediaHtml ? `<div class="mt-2">${mediaHtml}</div>` : ""}
 
                 ${post.location ? `<div class="text-[11px] text-[#576B95] mt-2">${escapeHtml(post.location)}</div>` : ""}
-                <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center justify-between mt-2 relative">
                   <span class="text-[11px] text-zinc-400">${escapeHtml(post.time || "刚刚")}</span>
-                  <div class="flex items-center gap-1.5">
-                    <button type="button" ${isExport ? "" : `data-toggle-like="${post.id}"`} class="px-2 py-0.5 rounded bg-zinc-100 text-xs flex items-center gap-1 ${post.likedByMe ? "text-rose-500" : "text-zinc-500"}">
-                      <i data-lucide="heart" class="w-3 h-3 ${post.likedByMe ? "fill-rose-500" : ""}"></i>
-                      <span class="text-[10px]">${post.likedByMe ? "已赞" : "赞"}</span>
-                    </button>
-                    <button type="button" ${isExport ? "" : `data-focus-comments="${post.id}"`} class="px-2 py-0.5 rounded bg-zinc-100 text-xs text-zinc-500 flex items-center gap-1">
-                      <i data-lucide="message-square" class="w-3 h-3"></i>
-                      <span class="text-[10px]">评论</span>
+                  <div class="relative flex items-center">
+                    ${(!isExport && openWechatMenuPostId === post.id) ? `
+                      <div class="absolute right-10 top-1/2 -translate-y-1/2 bg-[#4C4C4C] text-white rounded-md shadow-lg flex items-center divide-x divide-white/15 overflow-hidden z-20 whitespace-nowrap">
+                        <button type="button" data-toggle-like="${post.id}" class="px-3 py-1.5 hover:bg-white/10 text-[11px] flex items-center gap-1">
+                          <i data-lucide="heart" class="w-3 h-3 ${post.likedByMe ? "fill-rose-400 text-rose-400" : ""}"></i>
+                          <span>${post.likedByMe ? "取消" : "赞"}</span>
+                        </button>
+                        <button type="button" data-focus-comments="${post.id}" class="px-3 py-1.5 hover:bg-white/10 text-[11px] flex items-center gap-1">
+                          <i data-lucide="message-square" class="w-3 h-3"></i>
+                          <span>评论</span>
+                        </button>
+                      </div>` : ""}
+                    <button type="button" ${isExport ? "" : `data-wechat-more="${post.id}"`} aria-label="更多操作"
+                      class="w-8 h-5 rounded-[4px] bg-[#F7F7F7] hover:bg-[#EDEDED] flex items-center justify-center gap-[4px] transition-colors">
+                      <span class="w-[3.5px] h-[3.5px] rounded-full bg-[#576B95] inline-block"></span>
+                      <span class="w-[3.5px] h-[3.5px] rounded-full bg-[#576B95] inline-block"></span>
                     </button>
                   </div>
                 </div>
@@ -1255,8 +1503,8 @@
                 ${hasInteract ? `
                   <div class="mt-2.5 bg-[#F7F7F7] rounded px-2.5 py-1.5 text-[12px] space-y-1">
                     ${likesList.length > 0 ? `
-                      <div class="flex items-start gap-1.5 text-[#576B95] leading-snug">
-                        <i data-lucide="heart" class="w-3 h-3 mt-0.5 shrink-0"></i>
+                      <div class="flex items-start gap-1.5 text-[#576B95] leading-[18px]">
+                        <i data-lucide="heart" class="w-3 h-3 mt-[3px] shrink-0"></i>
                         <span>${escapeHtml(likesList.join("，"))}</span>
                       </div>` : ""}
                     ${(post.comments || []).map((c, idx) => `
@@ -1291,7 +1539,7 @@
           <!-- Banner -->
           <div ${isExport ? "" : 'data-quick-upload-cover="true"'} class="h-32 w-full bg-[#6f6f6f] overflow-hidden relative ${isExport ? "" : "cursor-pointer group"}">
             ${p.cover
-              ? `<img src="${p.cover}" alt="主页封面" class="w-full h-full object-cover" />`
+              ? `<img data-live-cover-img="true" src="${p.cover}" alt="主页封面" class="w-full h-full object-cover" style="object-position: ${p.coverPosX ?? 50}% ${p.coverPosY ?? 50}%;" />`
               : (isExport
                   ? `<div class="w-full h-full bg-[#6f6f6f]"></div>`
                   : `<div class="w-full h-full flex items-center justify-center text-white/90 text-xs font-medium group-hover:bg-black/10 transition-colors">点击导入背景图</div>`)
@@ -1469,15 +1717,49 @@
           ? "flex-1 py-2 rounded-lg text-xs font-semibold text-center bg-zinc-900 text-white"
           : "flex-1 py-2 rounded-lg text-xs font-medium text-center bg-zinc-100 text-zinc-600";
 
-        // Editor sub-tabs
-        document.getElementById("tab-editor-post").className = state.editorTab === "post"
-          ? "pb-2.5 text-xs font-semibold border-b-2 border-zinc-900 text-zinc-900 flex items-center gap-1.5"
-          : "pb-2.5 text-xs font-medium border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 flex items-center gap-1.5";
-        document.getElementById("tab-editor-profile").className = state.editorTab === "profile"
-          ? "pb-2.5 text-xs font-semibold border-b-2 border-zinc-900 text-zinc-900 flex items-center gap-1.5"
-          : "pb-2.5 text-xs font-medium border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 flex items-center gap-1.5";
+        // Work Mode UI sync
+        const isCodeMode = state.workMode === "code";
+        document.querySelectorAll(".work-mode-btn").forEach(btn => {
+          const active = btn.dataset.workMode === state.workMode;
+          btn.className = active
+            ? "work-mode-btn px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] font-semibold bg-zinc-900 text-white shadow-xs transition-all"
+            : "work-mode-btn px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] font-medium text-zinc-600 hover:text-zinc-900 transition-all";
+        });
+        const modeHint = document.getElementById("work-mode-hint");
+        if (modeHint) {
+          modeHint.textContent = isCodeMode
+            ? "纯代码模式：仅从「图床图库」选图，可一键导出自适应 HTML/CSS 组件代码"
+            : "普通模式：支持相册上传与图床选图，可自由勾选导出高清 PNG 图片";
+        }
+        const primaryBtn = document.getElementById("btn-export-primary");
+        const primaryLabel = document.getElementById("btn-export-primary-label");
+        if (primaryBtn && primaryLabel) {
+          primaryLabel.textContent = isCodeMode ? "导出代码" : "导出图片";
+          primaryBtn.className = isCodeMode
+            ? "px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap"
+            : "px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap";
+        }
+        // Toggle local-upload controls (hidden in pure code mode)
+        document.getElementById("post-dropzone").classList.toggle("hidden", isCodeMode);
+        document.getElementById("btn-upload-avatar").classList.toggle("hidden", isCodeMode);
+        document.getElementById("btn-upload-cover").classList.toggle("hidden", isCodeMode);
+        // Keep Export PNG always accessible in both modes; show Export Code in code mode (and always available via bottom bar)
+        document.getElementById("btn-export-image-bottom").classList.remove("hidden");
+        document.getElementById("btn-export-code-bottom").classList.toggle("hidden", !isCodeMode);
+
+        // Editor sub-tabs (3 tabs)
+        const tabBaseActive = "pb-2 text-xs font-semibold border-b-2 border-zinc-900 text-zinc-900 flex items-center gap-1 whitespace-nowrap";
+        const tabBaseIdle = "pb-2 text-xs font-medium border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 flex items-center gap-1 whitespace-nowrap";
+        document.getElementById("tab-editor-post").className = state.editorTab === "post" ? tabBaseActive : tabBaseIdle;
+        document.getElementById("tab-editor-profile").className = state.editorTab === "profile" ? tabBaseActive : tabBaseIdle;
+        document.getElementById("tab-editor-gallery").className = state.editorTab === "gallery" ? tabBaseActive : tabBaseIdle;
         document.getElementById("pane-editor-post").classList.toggle("hidden", state.editorTab !== "post");
         document.getElementById("pane-editor-profile").classList.toggle("hidden", state.editorTab !== "profile");
+        document.getElementById("pane-editor-gallery").classList.toggle("hidden", state.editorTab !== "gallery");
+        document.getElementById("gallery-tab-count").textContent = String(state.galleryImages.length);
+        if (typeof renderGalleryManager === "function") {
+          renderGalleryManager();
+        }
 
         // Profile avatar preview (no broken empty img)
         const avImg = document.getElementById("editor-avatar-preview");
@@ -1497,6 +1779,9 @@
         }
         document.getElementById("avatar-pos-val").textContent = `${state.profile.avatarPosY}%`;
         document.getElementById("input-avatar-pos").value = state.profile.avatarPosY;
+        const covPosY = state.profile.coverPosY ?? 50;
+        document.getElementById("cover-pos-val").textContent = `${covPosY}%`;
+        document.getElementById("input-cover-pos").value = covPosY;
 
         // Profile cover preview
         const covImg = document.getElementById("editor-cover-preview");
@@ -1504,6 +1789,7 @@
         const covBtnText = document.getElementById("btn-upload-cover-text");
         if (state.profile.cover) {
           covImg.src = state.profile.cover;
+          covImg.style.objectPosition = `${state.profile.coverPosX ?? 50}% ${state.profile.coverPosY ?? 50}%`;
           covImg.classList.remove("hidden");
           btnClearCov.classList.remove("hidden");
           covBtnText.textContent = "点击更换背景图";
@@ -1709,13 +1995,16 @@
       function buildPersistSnapshot() {
         return {
           app: "moments-twitter-lab",
-          version: 1,
+          version: 2,
           savedAt: Date.now(),
+          workMode: state.workMode,
           platform: state.platform,
           viewport: state.viewport,
           selectedPostId: state.selectedPostId,
           profile: state.profile,
-          posts: state.posts
+          posts: state.posts,
+          galleryGroups: state.galleryGroups,
+          galleryImages: state.galleryImages
         };
       }
 
@@ -1765,11 +2054,20 @@
         if (!data || typeof data !== "object" || !data.profile || !Array.isArray(data.posts)) {
           return false;
         }
+        if (data.workMode === "image" || data.workMode === "code") {
+          state.workMode = data.workMode;
+        }
         if (data.platform === "wechat" || data.platform === "twitter") {
           state.platform = data.platform;
         }
         if (data.viewport === "mobile" || data.viewport === "desktop") {
           state.viewport = data.viewport;
+        }
+        if (Array.isArray(data.galleryGroups) && data.galleryGroups.length > 0) {
+          state.galleryGroups = Array.from(new Set(["默认分组", ...data.galleryGroups.filter(Boolean)]));
+        }
+        if (Array.isArray(data.galleryImages)) {
+          state.galleryImages = data.galleryImages.filter(x => x && x.url);
         }
         state.profile = Object.assign({
           name: "",
@@ -1781,7 +2079,9 @@
           following: "0",
           avatar: "",
           avatarPosY: 18,
-          cover: ""
+          cover: "",
+          coverPosX: 50,
+          coverPosY: 50
         }, data.profile);
 
         if (data.posts.length > 0) {
@@ -2272,6 +2572,7 @@
       });
       document.getElementById("btn-mobile-tab-editor").addEventListener("click", () => {
         closeInsetTweakSheet();
+        closeCoverTweakSheet();
         state.mobileTab = "editor";
         renderEditorPanel();
       });
@@ -2561,6 +2862,10 @@
         state.profile.avatarPosY = Number(e.target.value);
         renderAll();
       });
+      document.getElementById("input-cover-pos").addEventListener("input", (e) => {
+        state.profile.coverPosY = Number(e.target.value);
+        renderAll();
+      });
 
       const coverInput = document.getElementById("profile-cover-input");
       document.getElementById("btn-upload-cover").addEventListener("click", () => coverInput.click());
@@ -2654,6 +2959,7 @@
       }
 
       function openInsetTweakSheet(postId) {
+        closeCoverTweakSheet();
         activeTweakPostId = postId;
         state.selectedPostId = postId;
         syncInsetTweakSheetUI();
@@ -2710,15 +3016,76 @@
       });
       document.getElementById("btn-sheet-close").addEventListener("click", closeInsetTweakSheet);
 
-      // Feed Preview Event Delegation
-      document.getElementById("feed-mount").addEventListener("click", (e) => {
-        // Direct click to upload avatar
-        if (e.target.closest("[data-quick-upload-avatar]")) {
-          e.stopPropagation();
-          avatarInput.click();
+      // Floating Quick-Tweak Sheet for Cover Image (X / Y live adjustment on preview page)
+      function syncCoverTweakSheetUI() {
+        const x = state.profile.coverPosX ?? 50;
+        const y = state.profile.coverPosY ?? 50;
+        document.getElementById("sheet-cov-x").value = x;
+        document.getElementById("sheet-cov-x-val").textContent = `${x}%`;
+        document.getElementById("sheet-cov-y").value = y;
+        document.getElementById("sheet-cov-y-val").textContent = `${y}%`;
+      }
+      function applyCoverPosLive() {
+        const x = state.profile.coverPosX ?? 50;
+        const y = state.profile.coverPosY ?? 50;
+        document.querySelectorAll("[data-live-cover-img]").forEach(img => {
+          img.style.objectPosition = `${x}% ${y}%`;
+        });
+        const edCov = document.getElementById("editor-cover-preview");
+        if (edCov) edCov.style.objectPosition = `${x}% ${y}%`;
+        const edY = document.getElementById("input-cover-pos");
+        if (edY) edY.value = y;
+        const edYVal = document.getElementById("cover-pos-val");
+        if (edYVal) edYVal.textContent = `${y}%`;
+        syncCoverTweakSheetUI();
+        scheduleAutoSave();
+        scheduleHistoryCommit();
+      }
+      function closeCoverTweakSheet() {
+        document.getElementById("cover-tweak-sheet").classList.add("hidden");
+      }
+      function toggleCoverTweakSheet() {
+        const sheet = document.getElementById("cover-tweak-sheet");
+        if (!sheet.classList.contains("hidden")) {
+          closeCoverTweakSheet();
           return;
         }
-        // Direct click to open profile editor (check before cover so camera button works)
+        closeInsetTweakSheet();
+        syncCoverTweakSheetUI();
+        sheet.classList.remove("hidden");
+      }
+
+      document.getElementById("sheet-cov-x").addEventListener("input", (e) => {
+        state.profile.coverPosX = Number(e.target.value);
+        applyCoverPosLive();
+      });
+      document.getElementById("sheet-cov-y").addEventListener("input", (e) => {
+        state.profile.coverPosY = Number(e.target.value);
+        applyCoverPosLive();
+      });
+      document.getElementById("btn-cover-sheet-reset").addEventListener("click", () => {
+        state.profile.coverPosX = 50;
+        state.profile.coverPosY = 50;
+        applyCoverPosLive();
+        showToast("已恢复背景居中构图");
+      });
+      document.getElementById("btn-cover-sheet-replace").addEventListener("click", () => {
+        closeCoverTweakSheet();
+        if (state.workMode === "code") openGalleryPicker("cover");
+        else coverInput.click();
+      });
+      document.getElementById("btn-cover-sheet-close").addEventListener("click", closeCoverTweakSheet);
+
+      // Feed Preview Event Delegation
+      document.getElementById("feed-mount").addEventListener("click", (e) => {
+        // Direct click to upload/pick avatar
+        if (e.target.closest("[data-quick-upload-avatar]")) {
+          e.stopPropagation();
+          if (state.workMode === "code") openGalleryPicker("avatar");
+          else avatarInput.click();
+          return;
+        }
+        // Direct click to open profile editor
         if (e.target.closest("[data-open-profile]")) {
           e.stopPropagation();
           state.editorTab = "profile";
@@ -2726,26 +3093,42 @@
           renderEditorPanel();
           return;
         }
-        // Direct click to upload cover
+        // Direct click on cover: if cover is set -> open floating X/Y tweak sheet right on preview page; if empty -> upload/pick
         if (e.target.closest("[data-quick-upload-cover]")) {
           e.stopPropagation();
-          coverInput.click();
+          if (state.profile.cover) {
+            toggleCoverTweakSheet();
+          } else {
+            if (state.workMode === "code") openGalleryPicker("cover");
+            else coverInput.click();
+          }
           return;
         }
-        // Direct click on empty post media slot to upload post images
+        // Direct click on empty post media slot to upload/pick post images
         const quickUploadPost = e.target.closest("[data-quick-upload-post]");
         if (quickUploadPost) {
           e.stopPropagation();
           state.selectedPostId = quickUploadPost.dataset.quickUploadPost;
           state.editorTab = "post";
           renderAll();
-          postFileInput.click();
+          if (state.workMode === "code") openGalleryPicker("post");
+          else postFileInput.click();
+          return;
+        }
+        // Toggle WeChat authentic "··" popover menu
+        const wcMoreBtn = e.target.closest("[data-wechat-more]");
+        if (wcMoreBtn) {
+          e.stopPropagation();
+          const pid = wcMoreBtn.dataset.wechatMore;
+          openWechatMenuPostId = openWechatMenuPostId === pid ? null : pid;
+          renderAll();
           return;
         }
         // Focus comments editor
         const focusCommentBtn = e.target.closest("[data-focus-comments]");
         if (focusCommentBtn) {
           e.stopPropagation();
+          openWechatMenuPostId = null;
           state.selectedPostId = focusCommentBtn.dataset.focusComments;
           state.editorTab = "post";
           state.mobileTab = "editor";
@@ -2798,6 +3181,7 @@
         const likeBtn = e.target.closest("[data-toggle-like]");
         if (likeBtn) {
           e.stopPropagation();
+          openWechatMenuPostId = null;
           const p = state.posts.find(x => x.id === likeBtn.dataset.toggleLike);
           if (p) {
             p.likedByMe = !p.likedByMe;
@@ -2819,6 +3203,7 @@
         // Select post for editing
         const card = e.target.closest("[data-select-post]");
         if (card) {
+          openWechatMenuPostId = null;
           state.selectedPostId = card.dataset.selectPost;
           state.editorTab = "post";
           renderAll();
@@ -2920,7 +3305,68 @@
         document.getElementById("export-img-modal").classList.remove("hidden");
       }
 
-      // Pre-crop object-fit:cover images via canvas so html2canvas never stretches them
+      // CORS-safe inliner for hosted http(s) images so PNG export renders every external photo crisply without triggering html2canvas fallback
+      const hostedImgDataCache = new Map();
+
+      function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(new Error("read error"));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      async function fetchUrlAsDataUrl(url) {
+        if (!isHostedUrl(url)) return url;
+        if (hostedImgDataCache.has(url)) return hostedImgDataCache.get(url);
+
+        const candidates = [
+          url,
+          `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`,
+          `https://corsproxy.io/?${encodeURIComponent(url)}`
+        ];
+
+        for (const candidate of candidates) {
+          try {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 9000);
+            const resp = await fetch(candidate, { mode: "cors", credentials: "omit", signal: ctrl.signal });
+            clearTimeout(timer);
+            if (!resp.ok) continue;
+            const blob = await resp.blob();
+            if (!blob || blob.size === 0) continue;
+            const dataUrl = await blobToDataUrl(blob);
+            if (dataUrl.startsWith("data:")) {
+              hostedImgDataCache.set(url, dataUrl);
+              return dataUrl;
+            }
+          } catch (_) {}
+        }
+        return null;
+      }
+
+      async function inlineHostedImagesForExport(rootEl) {
+        const imgs = Array.from(rootEl.querySelectorAll("img"));
+        let failedCount = 0;
+        await Promise.all(imgs.map(async (img) => {
+          const rawSrc = img.getAttribute("src") || "";
+          if (!isHostedUrl(rawSrc)) return;
+          const dataUrl = await fetchUrlAsDataUrl(rawSrc);
+          if (dataUrl) {
+            await new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+              img.src = dataUrl;
+            });
+          } else {
+            failedCount += 1;
+          }
+        }));
+        return failedCount;
+      }
+
+      // Pre-crop object-fit:cover images via canvas so export never stretches them
       function bakeObjectFitCoverImages(rootEl) {
         const imgs = Array.from(rootEl.querySelectorAll("img"));
         imgs.forEach(img => {
@@ -3033,6 +3479,10 @@
           if (window.lucide) {
             window.lucide.createIcons();
           }
+          // Convert any external hosted http(s) URLs to local data URLs (solves CORS blank boxes & prevents html2canvas text-shift fallback!)
+          genText.textContent = "正在加载图床图片...";
+          const corsFailedCount = await inlineHostedImagesForExport(host);
+          genText.textContent = "正在渲染高清图片...";
           // Wait for all images inside host to decode
           const hostImgs = Array.from(host.querySelectorAll("img"));
           await Promise.all(hostImgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; })));
@@ -3101,7 +3551,11 @@
           dlBtn.download = `${filenamePrefix}-${Date.now().toString().slice(-4)}.png`;
           dlBtn.classList.remove("hidden");
           dlBtn.classList.add("inline-flex");
-          showToast("高清图片已生成，点击「保存 PNG」或长按预览图保存");
+          if (corsFailedCount > 0) {
+            showToast(`图片已生成，但有 ${corsFailedCount} 张外链因图床防盗链限制无法跨域导出`);
+          } else {
+            showToast("高清图片已生成，点击「保存 PNG」或长按预览图保存");
+          }
         } catch (err) {
           showToast("导出失败，请重试");
         } finally {
@@ -3111,7 +3565,10 @@
         }
       }
 
-      document.getElementById("btn-export-image").addEventListener("click", openExportImageModal);
+      document.getElementById("btn-export-primary").addEventListener("click", () => {
+        if (state.workMode === "code") openExportCodeModal();
+        else openExportImageModal();
+      });
       document.getElementById("btn-export-image-bottom").addEventListener("click", openExportImageModal);
       document.getElementById("btn-export-img-close").addEventListener("click", () => {
         document.getElementById("export-img-modal").classList.add("hidden");
@@ -3152,13 +3609,16 @@
       function exportProjectArchive() {
         const payload = {
           app: "moments-twitter-lab",
-          version: 1,
+          version: 2,
           exportedAt: new Date().toISOString(),
+          workMode: state.workMode,
           platform: state.platform,
           viewport: state.viewport,
           selectedPostId: state.selectedPostId,
           profile: state.profile,
-          posts: state.posts
+          posts: state.posts,
+          galleryGroups: state.galleryGroups,
+          galleryImages: state.galleryImages
         };
         try {
           const jsonStr = JSON.stringify(payload);
@@ -3189,11 +3649,20 @@
             if (!data || typeof data !== "object" || !data.profile || !Array.isArray(data.posts)) {
               throw new Error("invalid schema");
             }
+            if (data.workMode === "image" || data.workMode === "code") {
+              state.workMode = data.workMode;
+            }
             if (data.platform === "wechat" || data.platform === "twitter") {
               state.platform = data.platform;
             }
             if (data.viewport === "mobile" || data.viewport === "desktop") {
               state.viewport = data.viewport;
+            }
+            if (Array.isArray(data.galleryGroups) && data.galleryGroups.length > 0) {
+              state.galleryGroups = Array.from(new Set(["默认分组", ...data.galleryGroups.filter(Boolean)]));
+            }
+            if (Array.isArray(data.galleryImages)) {
+              state.galleryImages = data.galleryImages.filter(x => x && x.url);
             }
             state.profile = Object.assign({
               name: "",
@@ -3304,7 +3773,9 @@
           following: "0",
           avatar: "",
           avatarPosY: 18,
-          cover: ""
+          cover: "",
+          coverPosX: 50,
+          coverPosY: 50
         };
         state.posts = [{
           id: "post-" + Date.now(),
@@ -3333,6 +3804,663 @@
         renderAll();
         commitHistoryNow();
         showToast("已清除所有排版，如需反悔可点「撤回」恢复");
+      });
+
+
+      // ============================================================
+      // WORK MODE, IMAGE HOSTING GALLERY & RESPONSIVE CODE EXPORTER
+      // ============================================================
+      function isHostedUrl(src) {
+        return /^https?:\/\//i.test(String(src || "").trim());
+      }
+
+      function probeImageMeta(url) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight, ratioLabel: classifyRatio(img.naturalWidth, img.naturalHeight) });
+          img.onerror = () => resolve({ w: 0, h: 0, ratioLabel: "图床外链" });
+          img.src = url;
+        });
+      }
+
+      function renderGalleryManager() {
+        const groupSelect = document.getElementById("select-gal-target-group");
+        const pillsWrap = document.getElementById("gal-group-pills");
+        const grid = document.getElementById("gal-items-grid");
+        if (!groupSelect || !pillsWrap || !grid) return;
+
+        const prevGroupVal = groupSelect.value;
+        groupSelect.innerHTML = state.galleryGroups.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join("");
+        if (state.galleryGroups.includes(prevGroupVal)) groupSelect.value = prevGroupVal;
+
+        const allCount = state.galleryImages.length;
+        const pillsHtml = [
+          `<button type="button" data-gal-filter="ALL" class="px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${state.activeGalleryGroup === "ALL" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}">全部 (${allCount})</button>`
+        ];
+        state.galleryGroups.forEach(g => {
+          const cnt = state.galleryImages.filter(x => x.group === g).length;
+          const active = state.activeGalleryGroup === g;
+          pillsHtml.push(`<button type="button" data-gal-filter="${escapeHtml(g)}" class="px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}">${escapeHtml(g)} (${cnt})</button>`);
+        });
+        pillsWrap.innerHTML = pillsHtml.join("");
+
+        const delGroupBtn = document.getElementById("btn-delete-active-group");
+        delGroupBtn.classList.toggle("hidden", state.activeGalleryGroup === "ALL" || state.activeGalleryGroup === "默认分组");
+
+        const filtered = state.activeGalleryGroup === "ALL"
+          ? state.galleryImages
+          : state.galleryImages.filter(x => x.group === state.activeGalleryGroup);
+        document.getElementById("gal-list-title").textContent = state.activeGalleryGroup === "ALL"
+          ? `全部图床图片 (${filtered.length})`
+          : `${state.activeGalleryGroup} (${filtered.length})`;
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `<div class="col-span-2 rounded-xl border border-dashed border-zinc-200 bg-zinc-50 py-8 text-center text-[11px] text-zinc-400">该分组暂无图床图片，请在上方粘贴链接添加</div>`;
+          return;
+        }
+
+        grid.innerHTML = filtered.map(item => `
+          <div class="rounded-xl border border-zinc-200 bg-white overflow-hidden flex flex-col">
+            <div class="relative aspect-square bg-zinc-100 overflow-hidden">
+              <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.name || "图床图片")}" class="w-full h-full object-cover" />
+              <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/65 text-white text-[9px]">${escapeHtml(item.ratioLabel || "外链")}</span>
+              <button type="button" data-gal-delete="${item.id}" title="从图库删除" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 hover:bg-red-600 text-white text-[10px] flex items-center justify-center">×</button>
+            </div>
+            <div class="p-2 space-y-1.5">
+              <div class="text-[11px] font-medium text-zinc-800 truncate" title="${escapeHtml(item.url)}">${escapeHtml(item.name || item.url.split("/").pop() || "未命名图片")}</div>
+              <select data-gal-move-group="${item.id}" class="w-full rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] text-zinc-600 focus:outline-none">
+                ${state.galleryGroups.map(g => `<option value="${escapeHtml(g)}" ${item.group === g ? "selected" : ""}>${escapeHtml(g)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      async function addGalleryUrls(entries, targetGroup) {
+        const group = state.galleryGroups.includes(targetGroup) ? targetGroup : "默认分组";
+        const added = [];
+        for (const entry of entries) {
+          const url = String(entry.url || "").trim();
+          if (!isHostedUrl(url)) continue;
+          if (state.galleryImages.some(x => x.url === url)) continue;
+          const item = {
+            id: "gal-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+            url,
+            name: String(entry.name || "").trim() || (url.split("?")[0].split("/").pop() || "图床图片").slice(0, 24),
+            group,
+            w: 0,
+            h: 0,
+            ratioLabel: "加载中"
+          };
+          state.galleryImages.unshift(item);
+          added.push(item);
+        }
+        if (added.length === 0) {
+          showToast("未发现新的有效 http(s) 图床链接（已自动去重）");
+          return;
+        }
+        renderAll();
+        showToast(`已成功添加 ${added.length} 张图床图片到「${group}」`);
+        // Probe image dimensions asynchronously
+        for (const item of added) {
+          const meta = await probeImageMeta(item.url);
+          item.w = meta.w;
+          item.h = meta.h;
+          item.ratioLabel = meta.ratioLabel;
+        }
+        renderGalleryManager();
+        scheduleAutoSave();
+      }
+
+      // Work mode switcher events
+      document.querySelectorAll("[data-work-mode]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const next = btn.dataset.workMode;
+          if (next === state.workMode) return;
+          state.workMode = next;
+          renderAll();
+          showToast(next === "code" ? "已切换为「纯代码模式」（仅使用图床图库选图）" : "已切换为「普通图片模式」");
+        });
+      });
+
+      document.getElementById("tab-editor-gallery").addEventListener("click", () => {
+        state.editorTab = "gallery";
+        renderEditorPanel();
+      });
+
+      // Gallery single / batch toggle
+      document.getElementById("btn-gal-mode-single").addEventListener("click", () => {
+        document.getElementById("gal-form-single").classList.remove("hidden");
+        document.getElementById("gal-form-batch").classList.add("hidden");
+        document.getElementById("btn-gal-mode-single").className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-900 text-white";
+        document.getElementById("btn-gal-mode-batch").className = "px-2 py-0.5 rounded text-[11px] font-medium text-zinc-600";
+      });
+      document.getElementById("btn-gal-mode-batch").addEventListener("click", () => {
+        document.getElementById("gal-form-single").classList.add("hidden");
+        document.getElementById("gal-form-batch").classList.remove("hidden");
+        document.getElementById("btn-gal-mode-batch").className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-900 text-white";
+        document.getElementById("btn-gal-mode-single").className = "px-2 py-0.5 rounded text-[11px] font-medium text-zinc-600";
+      });
+
+      document.getElementById("btn-gal-add-single").addEventListener("click", () => {
+        const urlEl = document.getElementById("input-gal-url");
+        const nameEl = document.getElementById("input-gal-name");
+        const grp = document.getElementById("select-gal-target-group").value;
+        const url = urlEl.value.trim();
+        if (!isHostedUrl(url)) {
+          showToast("请输入以 http:// 或 https:// 开头的有效图片链接");
+          return;
+        }
+        addGalleryUrls([{ url, name: nameEl.value.trim() }], grp);
+        urlEl.value = "";
+        nameEl.value = "";
+      });
+
+      document.getElementById("btn-gal-add-batch").addEventListener("click", () => {
+        const ta = document.getElementById("input-gal-batch");
+        const grp = document.getElementById("select-gal-target-group").value;
+        const lines = ta.value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const entries = [];
+        lines.forEach(line => {
+          if (line.includes("|")) {
+            const parts = line.split("|");
+            const urlPart = parts.pop().trim();
+            const namePart = parts.join("|").trim();
+            if (isHostedUrl(urlPart)) entries.push({ name: namePart, url: urlPart });
+          } else {
+            const match = line.match(/https?:\/\/\S+/i);
+            if (match) entries.push({ name: "", url: match[0] });
+          }
+        });
+        if (entries.length === 0) {
+          showToast("未识别到有效的 http(s) 图床链接");
+          return;
+        }
+        addGalleryUrls(entries, grp);
+        ta.value = "";
+      });
+
+      document.getElementById("btn-add-group").addEventListener("click", () => {
+        const inp = document.getElementById("input-new-group-name");
+        const name = inp.value.trim();
+        if (!name) return;
+        if (state.galleryGroups.includes(name)) {
+          showToast("该分组已存在");
+          return;
+        }
+        state.galleryGroups.push(name);
+        state.activeGalleryGroup = name;
+        inp.value = "";
+        renderGalleryManager();
+        scheduleAutoSave();
+        showToast(`已新建分组「${name}」`);
+      });
+
+      document.getElementById("gal-group-pills").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-gal-filter]");
+        if (!btn) return;
+        state.activeGalleryGroup = btn.dataset.galFilter;
+        renderGalleryManager();
+      });
+
+      document.getElementById("btn-delete-active-group").addEventListener("click", () => {
+        const g = state.activeGalleryGroup;
+        if (g === "ALL" || g === "默认分组") return;
+        state.galleryImages.forEach(item => {
+          if (item.group === g) item.group = "默认分组";
+        });
+        state.galleryGroups = state.galleryGroups.filter(x => x !== g);
+        state.activeGalleryGroup = "ALL";
+        renderGalleryManager();
+        scheduleAutoSave();
+        showToast(`已删除分组「${g}」，其图片已移至默认分组`);
+      });
+
+      document.getElementById("gal-items-grid").addEventListener("click", (e) => {
+        const delBtn = e.target.closest("[data-gal-delete]");
+        if (!delBtn) return;
+        state.galleryImages = state.galleryImages.filter(x => x.id !== delBtn.dataset.galDelete);
+        renderAll();
+        showToast("已从图库移除该图片");
+      });
+
+      document.getElementById("gal-items-grid").addEventListener("change", (e) => {
+        const sel = e.target.closest("[data-gal-move-group]");
+        if (!sel) return;
+        const item = state.galleryImages.find(x => x.id === sel.dataset.galMoveGroup);
+        if (item) {
+          item.group = sel.value;
+          renderGalleryManager();
+          scheduleAutoSave();
+        }
+      });
+
+      // ============================================================
+      // GALLERY PICKER MODAL (pick for post / avatar / cover)
+      // ============================================================
+      let pickerTarget = "post"; // "post" | "avatar" | "cover"
+      let pickerFilterGroup = "ALL";
+      let pickerSelectedIds = [];
+
+      function renderGalleryPicker() {
+        const pillsWrap = document.getElementById("picker-group-pills");
+        const grid = document.getElementById("picker-items-grid");
+        const footer = document.getElementById("picker-footer");
+        const isMulti = pickerTarget === "post";
+
+        document.getElementById("gallery-picker-title").textContent =
+          pickerTarget === "avatar" ? "从图床图库选择头像" :
+          pickerTarget === "cover" ? "从图床图库选择背景封面" : "从图床图库选择动态配图";
+        document.getElementById("gallery-picker-subtitle").textContent =
+          isMulti ? "点击勾选多张图片，按点击顺序加入当前动态" : "点击任意一张图片即可直接应用";
+        footer.classList.toggle("hidden", !isMulti);
+        document.getElementById("picker-selected-count").textContent = `已选 ${pickerSelectedIds.length} 张`;
+
+        const pills = [`<button type="button" data-picker-group="ALL" class="px-2 py-0.5 rounded-full text-[11px] font-medium ${pickerFilterGroup === "ALL" ? "bg-zinc-900 text-white" : "bg-white border border-zinc-200 text-zinc-600"}">全部</button>`];
+        state.galleryGroups.forEach(g => {
+          pills.push(`<button type="button" data-picker-group="${escapeHtml(g)}" class="px-2 py-0.5 rounded-full text-[11px] font-medium ${pickerFilterGroup === g ? "bg-zinc-900 text-white" : "bg-white border border-zinc-200 text-zinc-600"}">${escapeHtml(g)}</button>`);
+        });
+        pillsWrap.innerHTML = pills.join("");
+
+        const items = pickerFilterGroup === "ALL"
+          ? state.galleryImages
+          : state.galleryImages.filter(x => x.group === pickerFilterGroup);
+
+        if (items.length === 0) {
+          grid.innerHTML = `<div class="col-span-3 py-10 text-center space-y-2">
+            <div class="text-xs text-zinc-400">当前分组还没有图床图片</div>
+            <div class="text-[11px] text-zinc-400">点击右上角「+ 管理图库」粘贴图床链接即可批量导入</div>
+          </div>`;
+          return;
+        }
+
+        grid.innerHTML = items.map(item => {
+          const selIdx = pickerSelectedIds.indexOf(item.id);
+          const selected = selIdx !== -1;
+          return `
+            <button type="button" data-picker-item="${item.id}" class="relative aspect-square rounded-xl overflow-hidden border-2 transition-all text-left ${selected ? "border-indigo-600 ring-2 ring-indigo-200" : "border-zinc-200 hover:border-zinc-400"} bg-zinc-100">
+              <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover" />
+              ${selected ? `<span class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">${selIdx + 1}</span>` : ""}
+              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-1.5 py-1 text-[10px] text-white truncate">${escapeHtml(item.name || item.group)}</div>
+            </button>`;
+        }).join("");
+      }
+
+      function openGalleryPicker(target) {
+        pickerTarget = target;
+        pickerFilterGroup = "ALL";
+        pickerSelectedIds = [];
+        renderGalleryPicker();
+        document.getElementById("gallery-picker-modal").classList.remove("hidden");
+      }
+
+      function closeGalleryPicker() {
+        document.getElementById("gallery-picker-modal").classList.add("hidden");
+      }
+
+      document.getElementById("btn-pick-post-gallery").addEventListener("click", () => openGalleryPicker("post"));
+      document.getElementById("btn-pick-avatar-gallery").addEventListener("click", () => openGalleryPicker("avatar"));
+      document.getElementById("btn-pick-cover-gallery").addEventListener("click", () => openGalleryPicker("cover"));
+      document.getElementById("btn-gallery-picker-close").addEventListener("click", closeGalleryPicker);
+      document.getElementById("btn-picker-cancel").addEventListener("click", closeGalleryPicker);
+      document.getElementById("gallery-picker-modal").addEventListener("click", (e) => {
+        if (e.target.id === "gallery-picker-modal") closeGalleryPicker();
+      });
+      document.getElementById("btn-picker-goto-gallery").addEventListener("click", () => {
+        closeGalleryPicker();
+        state.editorTab = "gallery";
+        state.mobileTab = "editor";
+        renderEditorPanel();
+      });
+      document.getElementById("picker-group-pills").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-picker-group]");
+        if (!btn) return;
+        pickerFilterGroup = btn.dataset.pickerGroup;
+        renderGalleryPicker();
+      });
+      document.getElementById("picker-items-grid").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-picker-item]");
+        if (!btn) return;
+        const item = state.galleryImages.find(x => x.id === btn.dataset.pickerItem);
+        if (!item) return;
+
+        if (pickerTarget === "avatar") {
+          state.profile.avatar = item.url;
+          closeGalleryPicker();
+          renderAll();
+          showToast("已从图库设置头像");
+          return;
+        }
+        if (pickerTarget === "cover") {
+          state.profile.cover = item.url;
+          closeGalleryPicker();
+          renderAll();
+          showToast("已从图库设置背景封面");
+          return;
+        }
+        const idx = pickerSelectedIds.indexOf(item.id);
+        if (idx === -1) pickerSelectedIds.push(item.id);
+        else pickerSelectedIds.splice(idx, 1);
+        renderGalleryPicker();
+      });
+      document.getElementById("btn-picker-confirm").addEventListener("click", () => {
+        const post = getSelectedPost();
+        if (!post || pickerSelectedIds.length === 0) {
+          showToast("请先点击选择至少一张图片");
+          return;
+        }
+        const chosen = pickerSelectedIds
+          .map(id => state.galleryImages.find(x => x.id === id))
+          .filter(Boolean);
+        chosen.forEach(item => {
+          post.images.push({
+            id: "img-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+            src: item.url,
+            w: item.w || 0,
+            h: item.h || 0,
+            ratioLabel: item.ratioLabel || "图床外链"
+          });
+        });
+        if (post.images.length === 2) post.layout = "polaroid";
+        else if (post.images.length === 3) post.layout = "asymmetric";
+        closeGalleryPicker();
+        renderAll();
+        showToast(`已从图库添加 ${chosen.length} 张配图`);
+      });
+
+      // ============================================================
+      // RESPONSIVE SELF-CONTAINED HTML/CSS COMPONENT CODE EXPORTER
+      // ============================================================
+      let codeIncludeHeader = true;
+      let codeSelectedPostIds = new Set();
+
+      function buildResponsiveComponentCode() {
+        const isWechat = state.platform === "wechat";
+        const maxWidth = document.getElementById("select-code-maxwidth").value || "440px";
+        const chosenPosts = state.posts.filter(p => codeSelectedPostIds.has(p.id));
+        const p = state.profile;
+        const displayName = (p.name || "").trim() || "未命名";
+        const displayHandle = (p.handle || "").trim() || "@username";
+        const myLikeName = (p.name || "").trim() || "我";
+
+        const nonUrlIssues = [];
+        if (p.avatar && !isHostedUrl(p.avatar)) nonUrlIssues.push("人物头像");
+        if (codeIncludeHeader && p.cover && !isHostedUrl(p.cover)) nonUrlIssues.push("背景封面");
+        chosenPosts.forEach((post, idx) => {
+          const badCount = (post.images || []).filter(img => !isHostedUrl(img.src)).length;
+          if (badCount > 0) nonUrlIssues.push(`动态 #${state.posts.indexOf(post) + 1} 中有 ${badCount} 张本地图`);
+        });
+
+        const warnEl = document.getElementById("code-export-warning");
+        if (nonUrlIssues.length > 0) {
+          warnEl.textContent = `提示：检测到本地相册图片（${nonUrlIssues.join("、")}），导出的纯代码将自动省略本地 base64 以保持代码精简，请在「图床图库」中选择外链替换。`;
+          warnEl.classList.remove("hidden");
+        } else {
+          warnEl.classList.add("hidden");
+        }
+
+        const safeUrl = (src) => isHostedUrl(src) ? escapeHtml(src) : "";
+        const heartSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
+        const heartFillSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="#f43f5e" stroke="#f43f5e" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
+        const msgSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>`;
+        const repostSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>`;
+        const bmSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>`;
+        const verifiedSvg = renderTwitterVerifiedBadge("wt-verified");
+
+        const renderExportMediaHtml = (post) => {
+          const imgs = (post.images || []).filter(img => isHostedUrl(img.src));
+          if (!imgs.length) return "";
+          if (post.layout === "asymmetric") {
+            if (imgs.length === 1) return `<div class="wt-single"><img src="${safeUrl(imgs[0].src)}" alt="" /></div>`;
+            if (imgs.length === 2) {
+              return `<div class="wt-asym wt-asym-2"><div class="wt-asym-l"><img src="${safeUrl(imgs[0].src)}" alt="" /></div><div class="wt-asym-r"><img src="${safeUrl(imgs[1].src)}" alt="" /></div></div>`;
+            }
+            const extra = imgs.length - 3;
+            return `<div class="wt-asym"><div class="wt-asym-l"><img src="${safeUrl(imgs[0].src)}" alt="" /></div><div class="wt-asym-r"><img src="${safeUrl(imgs[1].src)}" alt="" /></div><div class="wt-asym-r"><img src="${safeUrl(imgs[2].src)}" alt="" />${extra > 0 ? `<div class="wt-more">+${extra}</div>` : ""}</div></div>`;
+          }
+          if (post.layout === "polaroid") {
+            const ratio = post.polaroidRatio === "34" ? "3/4" : "9/16";
+            const size = post.polaroidSize ?? 46;
+            const bw = post.polaroidBorder ?? 8;
+            const px = Math.min(Math.max(post.polaroidX ?? 52, 0), Math.max(0, 100 - size));
+            const py = Math.min(Math.max(post.polaroidY ?? 62, 0), 105);
+            const rot = post.polaroidTilt ? "transform:rotate(3deg);" : "";
+            const mainRatioNum = post.polaroidRatio === "34" ? (4 / 3) : (16 / 9);
+            const mainHpct = 72 * mainRatioNum;
+            const insetBottomPct = (py / 100) * mainHpct + size;
+            const extraPadPct = Math.max(0, Math.ceil(insetBottomPct - mainHpct) + 2);
+            const inset = imgs.length >= 2
+              ? `<div class="wt-pol-in" style="left:${px}%;top:${py}%;width:${size}%;border-width:${bw}px;${rot}"><img src="${safeUrl(imgs[1].src)}" alt="" /></div>`
+              : "";
+            return `<div class="wt-pol" style="padding-bottom:${imgs.length >= 2 ? extraPadPct : 0}%;"><div class="wt-pol-cv"><div class="wt-pol-main" style="width:${imgs.length >= 2 ? "72%" : "100%"};aspect-ratio:${ratio};"><img src="${safeUrl(imgs[0].src)}" alt="" /></div>${inset}</div></div>`;
+          }
+          if (post.layout === "filmstrip") {
+            const h = post.filmHeight || 236;
+            return `<div class="wt-film">${imgs.map(img => `<div class="wt-film-i" style="height:${h}px;"><img src="${safeUrl(img.src)}" alt="" /></div>`).join("")}</div>`;
+          }
+          if (imgs.length === 1) return `<div class="wt-single"><img src="${safeUrl(imgs[0].src)}" alt="" /></div>`;
+          const cols = (imgs.length === 2 || imgs.length === 4) ? "wt-grid-2" : "wt-grid-3";
+          return `<div class="wt-grid ${cols}">${imgs.slice(0, 9).map(img => `<div class="wt-cell"><img src="${safeUrl(img.src)}" alt="" /></div>`).join("")}</div>`;
+        };
+
+        const avUrl = safeUrl(p.avatar);
+        const covUrl = safeUrl(p.cover);
+        let bodyHtml = "";
+
+        if (isWechat) {
+          const covPosX = p.coverPosX ?? 50;
+          const covPosY = p.coverPosY ?? 50;
+          if (codeIncludeHeader) {
+            bodyHtml += `<div class="wt-wc-head"><div class="wt-wc-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}</div><div class="wt-wc-me"><span class="wt-wc-name">${escapeHtml(displayName)}</span><div class="wt-wc-av">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div></div>${p.bio ? `<div class="wt-wc-bio">${escapeHtml(p.bio)}</div>` : ""}`;
+          }
+          bodyHtml += chosenPosts.map(post => {
+            const likes = (post.likesText || "").split(/[,，]/).map(x => x.trim()).filter(Boolean);
+            if (post.likedByMe && !likes.includes(myLikeName)) likes.unshift(myLikeName);
+            const hasInt = likes.length > 0 || (post.comments && post.comments.length > 0);
+            const media = renderExportMediaHtml(post);
+            return `<div class="wt-post"><div class="wt-av-sm wt-av-wc">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-author-wc">${escapeHtml(displayName)}</div>${post.text ? `<div class="wt-text">${formatPostText(post.text, false)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}${post.location ? `<div class="wt-loc">${escapeHtml(post.location)}</div>` : ""}<div class="wt-foot"><span>${escapeHtml(post.time || "刚刚")}</span><span class="wt-wc-more"><i></i><i></i></span></div>${hasInt ? `<div class="wt-int">${likes.length ? `<div class="wt-likes">${heartSvg}<span>${escapeHtml(likes.join("，"))}</span></div>` : ""}${(post.comments || []).map((c, idx) => `<div class="wt-cmt${likes.length && idx === 0 ? " wt-cmt-top" : ""}">${c.replyTo ? `<span class="wt-c-u">${escapeHtml(c.author)}</span> 回复 <span class="wt-c-u">${escapeHtml(c.replyTo)}</span>：${escapeHtml(c.text)}` : `<span class="wt-c-u">${escapeHtml(c.author)}</span>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
+          }).join("");
+        } else {
+          const covPosX = p.coverPosX ?? 50;
+          const covPosY = p.coverPosY ?? 50;
+          if (codeIncludeHeader) {
+            bodyHtml += `<div class="wt-tw-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}</div><div class="wt-tw-prof"><div class="wt-tw-av"><div class="wt-tw-av-in">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div><div class="wt-tw-name">${escapeHtml(displayName)}${verifiedSvg}</div><div class="wt-tw-handle">${escapeHtml(displayHandle)}</div>${p.bio ? `<div class="wt-tw-bio">${escapeHtml(p.bio)}</div>` : ""}${(p.location || p.joinedDate) ? `<div class="wt-tw-meta">${p.location ? `<span>${escapeHtml(p.location)}</span>` : ""}${p.joinedDate ? `<span>${escapeHtml(p.joinedDate)}</span>` : ""}</div>` : ""}<div class="wt-tw-stat"><span><b>${escapeHtml(p.following || "0")}</b> 正在关注</span><span><b>${escapeHtml(p.followers || "0")}</b> 关注者</span></div></div>`;
+          }
+          bodyHtml += chosenPosts.map(post => {
+            const media = renderExportMediaHtml(post);
+            const repliesDisp = String(post.repliesCount ?? "").trim() !== "" ? post.repliesCount : String((post.comments || []).length);
+            return `<div class="wt-post"><div class="wt-av-sm wt-av-tw">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-tw-row"><b class="wt-tw-a">${escapeHtml(displayName)}</b>${verifiedSvg}<span class="wt-tw-h">${escapeHtml(displayHandle)} · ${escapeHtml(post.time || "刚刚")}</span></div>${post.text ? `<div class="wt-text">${formatPostText(post.text, true)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}<div class="wt-tw-bar"><span>${msgSvg}${escapeHtml(repliesDisp)}</span><span>${repostSvg}${escapeHtml(post.repostsCount || "0")}</span><span${post.likedByMe ? ' style="color:#f43f5e;"' : ""}>${post.likedByMe ? heartFillSvg : heartSvg}${escapeHtml(formatTwitterLikeDisplay(post))}</span><span>${bmSvg}</span></div>${(post.comments && post.comments.length) ? `<div class="wt-tw-cmts">${post.comments.map(c => `<div class="wt-tw-c">${c.replyTo ? `<b>${escapeHtml(c.author)}</b> 回复 <b>${escapeHtml(c.replyTo)}</b>：${escapeHtml(c.text)}` : `<b>${escapeHtml(c.author)}</b>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
+          }).join("");
+        }
+
+        const css = `<style>
+.wt-export{width:100%;max-width:${maxWidth};margin:0 auto;background:#fff;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;box-sizing:border-box;overflow:hidden;border:none;}
+.wt-export *{box-sizing:border-box;}
+.wt-wc-head{position:relative;margin-bottom:36px;}
+.wt-wc-cov{width:100%;aspect-ratio:16/9;max-height:240px;background:#6f6f6f;overflow:hidden;}
+.wt-wc-cov img,.wt-tw-cov img,.wt-wc-av img,.wt-tw-av img,.wt-av-sm img{width:100%;height:100%;object-fit:cover;display:block;}
+.wt-wc-me{position:absolute;right:14px;bottom:-22px;display:flex;align-items:flex-end;gap:10px;}
+.wt-wc-name{color:#fff;font-weight:600;font-size:15px;padding-bottom:26px;text-shadow:0 1px 4px rgba(0,0,0,.45);}
+.wt-wc-av{width:60px;height:60px;border-radius:8px;overflow:hidden;background:#b5b5b5;flex-shrink:0;}
+.wt-wc-bio{padding:0 14px 12px;text-align:right;font-size:11px;color:#a1a1aa;}
+.wt-tw-cov{width:100%;aspect-ratio:3/1;background:#6f6f6f;overflow:hidden;}
+.wt-tw-prof{padding:0 14px 12px;border-bottom:1px solid #e4e4e7;}
+.wt-tw-av{position:relative;z-index:2;width:78px;height:78px;padding:4px;border-radius:999px;background:#fff;margin:-39px 0 8px;box-sizing:border-box;}
+.wt-tw-av-in{width:100%;height:100%;border-radius:999px;overflow:hidden;background:#b5b5b5;}
+.wt-tw-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px;}
+.wt-verified{width:16px;height:16px;flex-shrink:0;}
+.wt-tw-handle{font-size:12px;color:#71717a;margin-top:2px;}
+.wt-tw-bio{font-size:13px;line-height:1.5;margin-top:8px;}
+.wt-tw-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#71717a;margin-top:8px;}
+.wt-tw-stat{display:flex;gap:14px;font-size:12px;color:#71717a;margin-top:8px;}
+.wt-tw-stat b{color:#18181b;}
+.wt-post{display:flex;gap:10px;padding:14px;border-top:1px solid #f4f4f5;}
+.wt-post:first-child{border-top:none;}
+.wt-av-sm{width:38px;height:38px;overflow:hidden;background:#b8b8b8;flex-shrink:0;}
+.wt-av-wc{border-radius:6px;}
+.wt-av-tw{border-radius:999px;}
+.wt-body{flex:1;min-width:0;}
+.wt-author-wc{font-size:14px;font-weight:600;color:#576B95;}
+.wt-tw-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px;}
+.wt-tw-a{color:#18181b;}
+.wt-tw-h{color:#71717a;}
+.wt-text{font-size:13.5px;line-height:1.6;margin-top:4px;word-break:break-word;}
+.wt-media{margin-top:8px;width:100%;}
+.wt-single img{max-width:100%;max-height:360px;width:auto;height:auto;display:block;}
+.wt-grid{display:grid;gap:3px;width:100%;}
+.wt-grid-2{grid-template-columns:repeat(2,1fr);max-width:78%;}
+.wt-grid-3{grid-template-columns:repeat(3,1fr);}
+.wt-cell{aspect-ratio:1/1;overflow:hidden;background:#f1f5f9;}
+.wt-cell img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block;}
+.wt-asym{display:grid;grid-template-columns:1.12fr 1fr;gap:3px;width:100%;}
+.wt-asym-l{grid-row:span 2;position:relative;overflow:hidden;background:#f1f5f9;min-height:160px;}
+.wt-asym-2 .wt-asym-l{grid-row:span 1;aspect-ratio:9/14;}
+.wt-asym-l img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;}
+.wt-asym-r{position:relative;aspect-ratio:1/1;overflow:hidden;background:#f1f5f9;}
+.wt-asym-2 .wt-asym-r{aspect-ratio:auto;height:100%;}
+.wt-asym-r img{width:100%;height:100%;object-fit:cover;display:block;}
+.wt-more{position:absolute;inset:0;background:rgba(0,0,0,.45);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;}
+.wt-pol{width:100%;max-width:360px;}
+.wt-pol-cv{position:relative;width:100%;}
+.wt-pol-main{overflow:hidden;background:#f1f5f9;}
+.wt-pol-main img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block;}
+.wt-pol-in{position:absolute;aspect-ratio:1/1;border-style:solid;border-color:#fff;background:#fff;overflow:hidden;}
+.wt-pol-in img{width:100%;height:100%;object-fit:cover;display:block;}
+.wt-film{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;}
+.wt-film-i{flex:0 0 auto;overflow:hidden;background:#f1f5f9;}
+.wt-film-i img{height:100%;width:auto;display:block;}
+.wt-loc{font-size:11px;color:#576B95;margin-top:8px;}
+.wt-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;color:#a1a1aa;}
+.wt-wc-more{display:inline-flex;align-items:center;justify-content:center;gap:4px;width:32px;height:20px;border-radius:4px;background:#f7f7f7;}
+.wt-wc-more i{display:inline-block;width:3.5px;height:3.5px;border-radius:999px;background:#576B95;font-style:normal;}
+.wt-int{margin-top:8px;background:#f7f7f7;border-radius:4px;padding:7px 10px;font-size:12px;line-height:18px;}
+.wt-likes{display:flex;align-items:flex-start;gap:5px;color:#576B95;line-height:18px;}
+.wt-likes svg{flex-shrink:0;margin-top:2.5px;}
+.wt-cmt{color:#3f3f46;margin-top:2px;word-break:break-word;}
+.wt-cmt-top{margin-top:5px;padding-top:5px;border-top:1px solid #e4e4e7;}
+.wt-c-u{font-weight:500;color:#576B95;}
+.wt-tw-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-right:16px;font-size:12px;color:#71717a;}
+.wt-tw-bar span{display:inline-flex;align-items:center;gap:4px;}
+.wt-tw-cmts{margin-top:10px;padding-top:8px;border-top:1px solid #f4f4f5;font-size:12px;line-height:1.55;color:#3f3f46;}
+.wt-tw-c{margin-top:4px;word-break:break-word;}
+.wt-tw-c b{color:#18181b;}
+</style>`;
+
+        const docTitle = `${escapeHtml(displayName)} - ${isWechat ? "微信朋友圈" : "推特 / X"}`;
+        const fullHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${docTitle}</title>
+${css}
+<style>html,body{margin:0;padding:0;border:0;background:#fff;width:100%;overflow-x:hidden;}</style>
+</head>
+<body>
+<div class="wt-export">${bodyHtml}</div>
+<script>
+(function(){
+  try {
+    var iframes = window.parent.document.querySelectorAll("iframe");
+    for (var i = 0; i < iframes.length; i++) {
+      if (iframes[i].contentWindow === window) {
+        iframes[i].style.borderRadius = "0";
+        iframes[i].style.overflow = "visible";
+        iframes[i].style.border = "none";
+        iframes[i].style.padding = "0";
+        break;
+      }
+    }
+  } catch (e) {}
+})();
+<\/script>
+</body>
+</html>`;
+        const wrapFence = document.getElementById("code-wrap-fence") && document.getElementById("code-wrap-fence").checked;
+        return wrapFence ? ("```html\n" + fullHtml + "\n```") : fullHtml;
+      }
+
+      function renderCodeExportChecklist() {
+        const listEl = document.getElementById("code-posts-checklist");
+        document.getElementById("code-include-header").checked = codeIncludeHeader;
+        listEl.innerHTML = state.posts.map((post, idx) => {
+          const checked = codeSelectedPostIds.has(post.id);
+          const previewText = (post.text || "").trim().slice(0, 20) || (post.images.length ? `含 ${post.images.length} 张配图` : "空白动态");
+          return `<label class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border cursor-pointer text-xs ${checked ? "border-zinc-900 bg-zinc-50" : "border-zinc-200 bg-white"}"><input type="checkbox" data-code-post-cb="${post.id}" ${checked ? "checked" : ""} class="w-3.5 h-3.5 accent-zinc-900" /><span class="font-semibold text-zinc-800 shrink-0">动态 #${idx + 1}</span><span class="text-zinc-500 truncate flex-1">${escapeHtml(previewText)}</span></label>`;
+        }).join("");
+        const code = buildResponsiveComponentCode();
+        document.getElementById("code-export-output").textContent = code;
+        document.getElementById("code-char-count").textContent = `${code.length} 字符`;
+      }
+
+      function openExportCodeModal() {
+        codeIncludeHeader = true;
+        codeSelectedPostIds = new Set(state.posts.map(p => p.id));
+        renderCodeExportChecklist();
+        document.getElementById("export-code-modal").classList.remove("hidden");
+      }
+
+      document.getElementById("btn-export-code-bottom").addEventListener("click", openExportCodeModal);
+      document.getElementById("btn-export-code-close").addEventListener("click", () => {
+        document.getElementById("export-code-modal").classList.add("hidden");
+      });
+      document.getElementById("export-code-modal").addEventListener("click", (e) => {
+        if (e.target.id === "export-code-modal") document.getElementById("export-code-modal").classList.add("hidden");
+      });
+      document.getElementById("code-include-header").addEventListener("change", (e) => {
+        codeIncludeHeader = e.target.checked;
+        renderCodeExportChecklist();
+      });
+      document.getElementById("select-code-maxwidth").addEventListener("change", renderCodeExportChecklist);
+      document.getElementById("code-wrap-fence").addEventListener("change", renderCodeExportChecklist);
+      document.getElementById("code-posts-checklist").addEventListener("change", (e) => {
+        const cb = e.target.closest("[data-code-post-cb]");
+        if (!cb) return;
+        if (cb.checked) codeSelectedPostIds.add(cb.dataset.codePostCb);
+        else codeSelectedPostIds.delete(cb.dataset.codePostCb);
+        renderCodeExportChecklist();
+      });
+      document.getElementById("btn-code-select-all").addEventListener("click", () => {
+        codeSelectedPostIds = new Set(state.posts.map(p => p.id));
+        renderCodeExportChecklist();
+      });
+      document.getElementById("btn-code-select-current").addEventListener("click", () => {
+        const curr = getSelectedPost();
+        codeSelectedPostIds = new Set(curr ? [curr.id] : []);
+        renderCodeExportChecklist();
+      });
+      document.getElementById("btn-code-select-none").addEventListener("click", () => {
+        codeSelectedPostIds = new Set();
+        renderCodeExportChecklist();
+      });
+      document.getElementById("btn-copy-exported-code").addEventListener("click", async () => {
+        const text = document.getElementById("code-export-output").textContent;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
+          else throw new Error("fallback");
+        } catch (_) {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+        showToast("已复制自适应 HTML/CSS 组件代码");
+      });
+      document.getElementById("btn-download-code-html").addEventListener("click", () => {
+        let text = document.getElementById("code-export-output").textContent;
+        text = text.replace(/^```html\n/, "").replace(/\n```$/, "");
+        const blob = new Blob([text], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${state.platform}-component-${Date.now().toString().slice(-4)}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast("已下载组件 .html 代码文件");
       });
 
       // Initial restore from local auto-save & render
