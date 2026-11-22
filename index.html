@@ -314,8 +314,9 @@
         <div class="flex items-center justify-between gap-2">
           <span class="text-[11px] font-semibold text-zinc-600">工作模式</span>
           <div class="flex items-center bg-zinc-200/75 p-0.5 rounded-lg">
-            <button type="button" data-work-mode="image" class="work-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium transition-all">普通图片</button>
-            <button type="button" data-work-mode="code" class="work-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium transition-all">纯代码</button>
+            <button type="button" data-work-mode="image" class="work-mode-btn px-2 py-1 rounded-md text-[11px] font-medium transition-all">普通图片</button>
+            <button type="button" data-work-mode="code" class="work-mode-btn px-2 py-1 rounded-md text-[11px] font-medium transition-all">纯代码</button>
+            <button type="button" data-work-mode="tavern" class="work-mode-btn px-2 py-1 rounded-md text-[11px] font-medium transition-all">酒馆开场白</button>
           </div>
         </div>
         <div id="work-mode-hint" class="text-[10px] text-zinc-500 leading-snug">普通模式：支持相册上传与图床选图，可导出高清 PNG 图片</div>
@@ -526,6 +527,17 @@
               <label for="input-post-time" class="block text-[11px] text-zinc-500 mb-1">时间戳</label>
               <input id="input-post-time" type="text" placeholder="刚刚" class="w-full rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-zinc-900" />
             </div>
+          </div>
+        </section>
+
+        <!-- Tavern Greeting Switcher Info (visible in 酒馆开场白 mode) -->
+        <section id="section-tavern-binding" class="hidden bg-violet-50/70 border border-violet-200 rounded-xl p-3 space-y-1.5">
+          <div class="text-xs font-semibold text-violet-900 flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-violet-600"></i>
+            <span>酒馆开场白模式（按帖子顺序对应）</span>
+          </div>
+          <div class="text-[10.5px] text-violet-800/90 leading-relaxed">
+            帖子按顺序依次对应开场白 #1、#2、#3…；多出的空开场白会在末尾自动补一条第一人称纯文字动态。点击朋友圈右上角相机或推特「开场白列表」可将帖子区原位切换为按 group / title / desc 分组的列表。
           </div>
         </section>
 
@@ -788,8 +800,9 @@
       <!-- Helpful quick status bar + Mode Pill + Undo/Redo -->
       <div class="w-full max-w-[560px] mb-3 flex items-center justify-between gap-2 text-[11px] text-zinc-500 px-1">
         <div class="flex items-center bg-white border border-zinc-200 p-0.5 rounded-lg shrink-0">
-          <button type="button" data-work-mode="image" class="work-mode-btn px-2 py-0.5 rounded text-[11px] font-medium transition-all">普通图片</button>
-          <button type="button" data-work-mode="code" class="work-mode-btn px-2 py-0.5 rounded text-[11px] font-medium transition-all">纯代码</button>
+          <button type="button" data-work-mode="image" class="work-mode-btn px-1.5 sm:px-2 py-0.5 rounded text-[10.5px] sm:text-[11px] font-medium transition-all">图片</button>
+          <button type="button" data-work-mode="code" class="work-mode-btn px-1.5 sm:px-2 py-0.5 rounded text-[10.5px] sm:text-[11px] font-medium transition-all">纯代码</button>
+          <button type="button" data-work-mode="tavern" class="work-mode-btn px-1.5 sm:px-2 py-0.5 rounded text-[10.5px] sm:text-[11px] font-medium transition-all">酒馆</button>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
           <button type="button" data-action-undo="true" disabled title="撤回上一步 (Ctrl+Z)"
@@ -1054,6 +1067,41 @@
         <!-- Warning banner if local non-URL images exist -->
         <div id="code-export-warning" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800 leading-relaxed"></div>
 
+        <!-- SillyTavern Regex JSON Config (visible in 酒馆开场白 mode) -->
+        <div id="tavern-regex-config" class="hidden rounded-xl border border-violet-200 bg-violet-50/70 p-3 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-violet-900">酒馆正则脚本配置（可直接导出 .json 导入酒馆）</span>
+            <label class="inline-flex items-center gap-1.5 text-[11px] text-violet-800 cursor-pointer">
+              <input id="input-tavern-regex-disabled" type="checkbox" class="rounded border-violet-300 accent-violet-600" />
+              <span>默认禁用</span>
+            </label>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label for="input-tavern-script-name" class="block text-[10.5px] text-violet-800 mb-1">脚本名称 (scriptName)</label>
+              <input id="input-tavern-script-name" type="text" value="开场白" placeholder="开场白" class="w-full rounded-lg border border-violet-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:border-violet-600" />
+            </div>
+            <div>
+              <label for="input-tavern-find-regex" class="block text-[10.5px] text-violet-800 mb-1">查找正则 (findRegex，可自定义)</label>
+              <input id="input-tavern-find-regex" type="text" value="【开场白】" placeholder="例如：【开场白】 或 /【开场白】/g" class="w-full rounded-lg border border-violet-200 bg-white px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-violet-600" />
+            </div>
+          </div>
+          <div class="text-[10.5px] text-violet-800/90 bg-white/80 border border-violet-200/70 rounded-lg px-2.5 py-2 leading-relaxed space-y-1.5">
+            <div>
+              <b>开场白对应说明：</b>帖子默认按从上到下的顺序依次对应开场白 #1、#2、#3…；多出的空开场白会在动态末尾自动补一条第一人称纯文字动态。
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-1 border-t border-violet-100">
+              <span class="font-semibold text-violet-900">分组列表标签（写在开场白开头，不写则归入「未收录」）：</span>
+              <button id="btn-copy-tavern-tags" type="button" class="shrink-0 px-2 py-0.5 rounded-md bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-semibold transition-colors">一键复制标签</button>
+            </div>
+            <div class="font-mono text-[10.5px] text-violet-900 bg-violet-50/80 rounded px-2 py-1 select-all">
+              &lt;!-- group: 分组名 --&gt;<br>
+              &lt;!-- title: 开场白标题 --&gt;<br>
+              &lt;!-- desc: 简介描述 --&gt;
+            </div>
+          </div>
+        </div>
+
         <!-- Include Header & Max Width -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 cursor-pointer">
@@ -1098,11 +1146,17 @@
         </div>
       </div>
 
-      <div class="px-4 sm:px-5 py-3 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between gap-2">
-        <button id="btn-download-code-html" type="button" class="px-3.5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
-          <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
-          <span>下载 .html</span>
-        </button>
+      <div class="px-4 sm:px-5 py-3 border-t border-zinc-200 bg-zinc-50 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5">
+          <button id="btn-download-code-html" type="button" class="px-3 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
+            <span>下载 .html</span>
+          </button>
+          <button id="btn-download-tavern-json" type="button" class="hidden px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold items-center gap-1.5 transition-colors">
+            <i data-lucide="file-json" class="w-3.5 h-3.5"></i>
+            <span>导出酒馆正则 .json</span>
+          </button>
+        </div>
         <button id="btn-copy-exported-code" type="button" class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors">
           <i data-lucide="clipboard-copy" class="w-3.5 h-3.5"></i>
           <span>一键复制完整代码</span>
@@ -1461,7 +1515,7 @@
                          <span class="text-sm font-medium tracking-wide">点击导入背景图</span>
                        </div>`)
               }
-
+              ${(!isExport && state.workMode === "tavern") ? `<span class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/35 text-white inline-flex items-center justify-center backdrop-blur-sm pointer-events-none" title="导出后点击可切换开场白列表"><i data-lucide="camera" class="w-4 h-4"></i></span>` : ""}
             </div>
             <!-- Avatar & Name overlapping bottom-right -->
             <div class="absolute right-4 -bottom-6 flex items-end gap-3">
@@ -1504,7 +1558,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <span class="text-[14px] font-semibold text-[#576B95] truncate">${escapeHtml(displayName)}</span>
-                  ${isSelected ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-medium shrink-0">编辑中</span>` : ""}
+                  <div class="flex items-center gap-1 shrink-0">${(!isExport && state.workMode === "tavern") ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-medium">开场白 #${state.posts.indexOf(post) + 1}</span>` : ""}${isSelected ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-medium">编辑中</span>` : ""}</div>
                 </div>
                 ${post.text ? `<p class="text-[13.5px] text-zinc-800 leading-relaxed mt-1 break-words">${formatPostText(post.text, false)}</p>` : ""}
 
@@ -1590,8 +1644,8 @@
                   : `<div class="w-full h-full flex items-center justify-center text-white text-[10px] font-medium text-center leading-tight px-1">${isExport ? "" : "点击导入<br>头像"}</div>`
                 }
               </button>
-              <button type="button" ${isExport ? "" : 'data-open-profile="true"'} class="px-3.5 py-1.5 rounded-full border border-zinc-300 text-xs font-semibold text-zinc-900">
-                编辑资料
+              <button type="button" ${isExport ? "" : 'data-open-profile="true"'} class="px-3.5 py-1.5 rounded-full border border-zinc-300 text-xs font-semibold text-zinc-900 inline-flex items-center gap-1.5">
+                ${(!isExport && state.workMode === "tavern") ? `<i data-lucide="list" class="w-3.5 h-3.5"></i><span>开场白列表</span>` : `编辑资料`}
               </button>
             </div>
             <div class="text-base font-bold text-zinc-900 flex items-center gap-1">
@@ -1644,7 +1698,7 @@
                     <span class="text-zinc-400">·</span>
                     <span class="text-zinc-500 shrink-0">${escapeHtml(post.time || "刚刚")}</span>
                   </div>
-                  ${isSelected ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-medium shrink-0">编辑中</span>` : ""}
+                  <div class="flex items-center gap-1 shrink-0">${(!isExport && state.workMode === "tavern") ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-medium">开场白 #${state.posts.indexOf(post) + 1}</span>` : ""}${isSelected ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-medium">编辑中</span>` : ""}</div>
                 </div>
 
                 ${post.text ? `<p class="text-[13.5px] text-zinc-900 leading-relaxed mt-1 break-words">${formatPostText(post.text, true)}</p>` : ""}
@@ -1752,35 +1806,44 @@
           ? "flex-1 py-2 rounded-lg text-xs font-semibold text-center bg-zinc-900 text-white"
           : "flex-1 py-2 rounded-lg text-xs font-medium text-center bg-zinc-100 text-zinc-600";
 
-        // Work Mode UI sync
+        // Work Mode UI sync (image | code | tavern)
         const isCodeMode = state.workMode === "code";
+        const isTavernMode = state.workMode === "tavern";
+        const isUrlOnlyMode = isCodeMode || isTavernMode;
         document.querySelectorAll(".work-mode-btn").forEach(btn => {
           const active = btn.dataset.workMode === state.workMode;
+          const activeColor = isTavernMode && active ? "bg-violet-600 text-white" : "bg-zinc-900 text-white";
           btn.className = active
-            ? "work-mode-btn px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] font-semibold bg-zinc-900 text-white shadow-xs transition-all"
-            : "work-mode-btn px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] font-medium text-zinc-600 hover:text-zinc-900 transition-all";
+            ? `work-mode-btn px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md text-[10.5px] sm:text-[11px] font-semibold ${activeColor} shadow-xs transition-all whitespace-nowrap`
+            : "work-mode-btn px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md text-[10.5px] sm:text-[11px] font-medium text-zinc-600 hover:text-zinc-900 transition-all whitespace-nowrap";
         });
         const modeHint = document.getElementById("work-mode-hint");
         if (modeHint) {
-          modeHint.textContent = isCodeMode
-            ? "纯代码模式：仅从「图床图库」选图，可一键导出自适应 HTML/CSS 组件代码"
-            : "普通模式：支持相册上传与图床选图，可自由勾选导出高清 PNG 图片";
+          modeHint.textContent = isTavernMode
+            ? "酒馆开场白模式：每条动态绑定关键词或序号，点击动态直接切换酒馆开场白，支持导出正则 JSON"
+            : (isCodeMode
+                ? "纯代码模式：仅从「图床图库」选图，可一键导出自适应 HTML5 组件代码"
+                : "普通模式：支持相册上传与图床选图，可自由勾选导出高清压缩图片");
         }
         const primaryBtn = document.getElementById("btn-export-primary");
         const primaryLabel = document.getElementById("btn-export-primary-label");
         if (primaryBtn && primaryLabel) {
-          primaryLabel.textContent = isCodeMode ? "导出代码" : "导出图片";
-          primaryBtn.className = isCodeMode
-            ? "px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap"
-            : "px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap";
+          primaryLabel.textContent = isTavernMode ? "导出开场白" : (isCodeMode ? "导出代码" : "导出图片");
+          primaryBtn.className = isTavernMode
+            ? "px-2.5 sm:px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap"
+            : (isCodeMode
+                ? "px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap"
+                : "px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-medium flex items-center gap-1 transition-colors whitespace-nowrap");
         }
-        // Toggle local-upload controls (hidden in pure code mode)
-        document.getElementById("post-dropzone").classList.toggle("hidden", isCodeMode);
-        document.getElementById("btn-upload-avatar").classList.toggle("hidden", isCodeMode);
-        document.getElementById("btn-upload-cover").classList.toggle("hidden", isCodeMode);
-        // Keep Export PNG always accessible in both modes; show Export Code in code mode (and always available via bottom bar)
+        // Toggle local-upload controls (hidden in pure code & tavern modes)
+        document.getElementById("post-dropzone").classList.toggle("hidden", isUrlOnlyMode);
+        document.getElementById("btn-upload-avatar").classList.toggle("hidden", isUrlOnlyMode);
+        document.getElementById("btn-upload-cover").classList.toggle("hidden", isUrlOnlyMode);
         document.getElementById("btn-export-image-bottom").classList.remove("hidden");
-        document.getElementById("btn-export-code-bottom").classList.toggle("hidden", !isCodeMode);
+        const bottomCodeBtn = document.getElementById("btn-export-code-bottom");
+        bottomCodeBtn.classList.toggle("hidden", !isUrlOnlyMode);
+        bottomCodeBtn.querySelector("span").textContent = isTavernMode ? "导出开场白 / 正则" : "导出代码";
+        document.getElementById("section-tavern-binding").classList.toggle("hidden", !isTavernMode);
 
         // Editor sub-tabs (3 tabs)
         const tabBaseActive = "pb-2 text-xs font-semibold border-b-2 border-zinc-900 text-zinc-900 flex items-center gap-1 whitespace-nowrap";
@@ -2089,7 +2152,7 @@
         if (!data || typeof data !== "object" || !data.profile || !Array.isArray(data.posts)) {
           return false;
         }
-        if (data.workMode === "image" || data.workMode === "code") {
+        if (data.workMode === "image" || data.workMode === "code" || data.workMode === "tavern") {
           state.workMode = data.workMode;
         }
         if (data.platform === "wechat" || data.platform === "twitter") {
@@ -3106,7 +3169,7 @@
       });
       document.getElementById("btn-cover-sheet-replace").addEventListener("click", () => {
         closeCoverTweakSheet();
-        if (state.workMode === "code") openGalleryPicker("cover");
+        if (state.workMode === "code" || state.workMode === "tavern") openGalleryPicker("cover");
         else coverInput.click();
       });
       document.getElementById("btn-cover-sheet-close").addEventListener("click", closeCoverTweakSheet);
@@ -3116,7 +3179,7 @@
         // Direct click to upload/pick avatar
         if (e.target.closest("[data-quick-upload-avatar]")) {
           e.stopPropagation();
-          if (state.workMode === "code") openGalleryPicker("avatar");
+          if (state.workMode === "code" || state.workMode === "tavern") openGalleryPicker("avatar");
           else avatarInput.click();
           return;
         }
@@ -3134,7 +3197,7 @@
           if (state.profile.cover) {
             toggleCoverTweakSheet();
           } else {
-            if (state.workMode === "code") openGalleryPicker("cover");
+            if (state.workMode === "code" || state.workMode === "tavern") openGalleryPicker("cover");
             else coverInput.click();
           }
           return;
@@ -3146,7 +3209,7 @@
           state.selectedPostId = quickUploadPost.dataset.quickUploadPost;
           state.editorTab = "post";
           renderAll();
-          if (state.workMode === "code") openGalleryPicker("post");
+          if (state.workMode === "code" || state.workMode === "tavern") openGalleryPicker("post");
           else postFileInput.click();
           return;
         }
@@ -3690,7 +3753,7 @@
       }
 
       document.getElementById("btn-export-primary").addEventListener("click", () => {
-        if (state.workMode === "code") openExportCodeModal();
+        if (state.workMode === "code" || state.workMode === "tavern") openExportCodeModal();
         else openExportImageModal();
       });
       document.getElementById("btn-export-image-bottom").addEventListener("click", openExportImageModal);
@@ -3807,7 +3870,7 @@
             if (!data || typeof data !== "object" || !data.profile || !Array.isArray(data.posts)) {
               throw new Error("invalid schema");
             }
-            if (data.workMode === "image" || data.workMode === "code") {
+            if (data.workMode === "image" || data.workMode === "code" || data.workMode === "tavern") {
               state.workMode = data.workMode;
             }
             if (data.platform === "wechat" || data.platform === "twitter") {
@@ -4077,7 +4140,11 @@
           if (next === state.workMode) return;
           state.workMode = next;
           renderAll();
-          showToast(next === "code" ? "已切换为「纯代码模式」（仅使用图床图库选图）" : "已切换为「普通图片模式」");
+          showToast(
+            next === "tavern"
+              ? "已切换为「酒馆开场白模式」（支持关键词绑定与正则 JSON 导出）"
+              : (next === "code" ? "已切换为「纯代码模式」（仅使用图床图库选图）" : "已切换为「普通图片模式」")
+          );
         });
       });
 
@@ -4403,39 +4470,67 @@
 
         const avUrl = safeUrl(p.avatar);
         const covUrl = safeUrl(p.cover);
-        let bodyHtml = "";
+        let headerHtml = "";
+        let postsHtml = "";
 
         if (isWechat) {
           const covPosX = p.coverPosX ?? 50;
           const covPosY = p.coverPosY ?? 50;
+          const camSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>`;
           if (codeIncludeHeader) {
-            bodyHtml += `<div class="wt-wc-head"><div class="wt-wc-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}</div><div class="wt-wc-me"><span class="wt-wc-name">${escapeHtml(displayName)}</span><div class="wt-wc-av">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div></div>${p.bio ? `<div class="wt-wc-bio">${escapeHtml(p.bio)}</div>` : ""}`;
+            const wcCamBtn = state.workMode === "tavern"
+              ? `<button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-wc-cam" title="切换开场白列表">${camSvg}</button>`
+              : "";
+            headerHtml += `<div class="wt-wc-head"><div class="wt-wc-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}${wcCamBtn}</div><div class="wt-wc-me"><span class="wt-wc-name">${escapeHtml(displayName)}</span><div class="wt-wc-av">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div></div>${p.bio ? `<div class="wt-wc-bio">${escapeHtml(p.bio)}</div>` : ""}`;
+          } else if (state.workMode === "tavern") {
+            headerHtml += `<div class="wt-dir-topbar"><button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-dir-topbtn">${camSvg}<span class="wt-toggle-label">开场白列表</span></button></div>`;
           }
-          bodyHtml += chosenPosts.map(post => {
+          postsHtml += chosenPosts.map((post, idx) => {
             const likes = (post.likesText || "").split(/[,，]/).map(x => x.trim()).filter(Boolean);
             if (post.likedByMe && !likes.includes(myLikeName)) likes.unshift(myLikeName);
             const hasInt = likes.length > 0 || (post.comments && post.comments.length > 0);
             const media = renderExportMediaHtml(post);
-            return `<div class="wt-post"><div class="wt-av-sm wt-av-wc">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-author-wc">${escapeHtml(displayName)}</div>${post.text ? `<div class="wt-text">${formatPostText(post.text, false)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}${post.location ? `<div class="wt-loc">${escapeHtml(post.location)}</div>` : ""}<div class="wt-foot"><span>${escapeHtml(post.time || "刚刚")}</span><span class="wt-wc-more"><i></i><i></i></span></div>${hasInt ? `<div class="wt-int">${likes.length ? `<div class="wt-likes">${heartSvg}<span>${escapeHtml(likes.join("，"))}</span></div>` : ""}${(post.comments || []).map((c, idx) => `<div class="wt-cmt${likes.length && idx === 0 ? " wt-cmt-top" : ""}">${c.replyTo ? `<span class="wt-c-u">${escapeHtml(c.author)}</span> 回复 <span class="wt-c-u">${escapeHtml(c.replyTo)}</span>：${escapeHtml(c.text)}` : `<span class="wt-c-u">${escapeHtml(c.author)}</span>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
+            const postNum = idx + 1;
+            const tAttr = state.workMode === "tavern"
+              ? ` data-wt-tavern-post="1" data-wt-swipe="${postNum}" onclick="window.wtSwitchArchive&&window.wtSwitchArchive(${postNum}, this)"`
+              : "";
+            return `<div class="wt-post${state.workMode === "tavern" ? " wt-tavern-card" : ""}"${tAttr}><div class="wt-av-sm wt-av-wc">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-author-wc">${escapeHtml(displayName)}</div>${post.text ? `<div class="wt-text">${formatPostText(post.text, false)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}${post.location ? `<div class="wt-loc">${escapeHtml(post.location)}</div>` : ""}<div class="wt-foot"><span>${escapeHtml(post.time || "刚刚")}</span><span class="wt-wc-more"><i></i><i></i></span></div>${hasInt ? `<div class="wt-int">${likes.length ? `<div class="wt-likes">${heartSvg}<span>${escapeHtml(likes.join("，"))}</span></div>` : ""}${(post.comments || []).map((c, cidx) => `<div class="wt-cmt${likes.length && cidx === 0 ? " wt-cmt-top" : ""}">${c.replyTo ? `<span class="wt-c-u">${escapeHtml(c.author)}</span> 回复 <span class="wt-c-u">${escapeHtml(c.replyTo)}</span>：${escapeHtml(c.text)}` : `<span class="wt-c-u">${escapeHtml(c.author)}</span>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
           }).join("");
         } else {
           const covPosX = p.coverPosX ?? 50;
           const covPosY = p.coverPosY ?? 50;
+          const listSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
           if (codeIncludeHeader) {
-            bodyHtml += `<div class="wt-tw-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}</div><div class="wt-tw-prof"><div class="wt-tw-av"><div class="wt-tw-av-in">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div><div class="wt-tw-name">${escapeHtml(displayName)}${verifiedSvg}</div><div class="wt-tw-handle">${escapeHtml(displayHandle)}</div>${p.bio ? `<div class="wt-tw-bio">${escapeHtml(p.bio)}</div>` : ""}${(p.location || p.joinedDate) ? `<div class="wt-tw-meta">${p.location ? `<span>${escapeHtml(p.location)}</span>` : ""}${p.joinedDate ? `<span>${escapeHtml(p.joinedDate)}</span>` : ""}</div>` : ""}<div class="wt-tw-stat"><span><b>${escapeHtml(p.following || "0")}</b> 正在关注</span><span><b>${escapeHtml(p.followers || "0")}</b> 关注者</span></div></div>`;
+            const twDirBtn = state.workMode === "tavern"
+              ? `<button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-tw-dirbtn">${listSvg}<span class="wt-toggle-label">开场白列表</span></button>`
+              : "";
+            headerHtml += `<div class="wt-tw-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}</div><div class="wt-tw-prof"><div class="wt-tw-toprow"><div class="wt-tw-av"><div class="wt-tw-av-in">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div>${twDirBtn}</div><div class="wt-tw-name">${escapeHtml(displayName)}${verifiedSvg}</div><div class="wt-tw-handle">${escapeHtml(displayHandle)}</div>${p.bio ? `<div class="wt-tw-bio">${escapeHtml(p.bio)}</div>` : ""}${(p.location || p.joinedDate) ? `<div class="wt-tw-meta">${p.location ? `<span>${escapeHtml(p.location)}</span>` : ""}${p.joinedDate ? `<span>${escapeHtml(p.joinedDate)}</span>` : ""}</div>` : ""}<div class="wt-tw-stat"><span><b>${escapeHtml(p.following || "0")}</b> 正在关注</span><span><b>${escapeHtml(p.followers || "0")}</b> 关注者</span></div></div>`;
+          } else if (state.workMode === "tavern") {
+            headerHtml += `<div class="wt-dir-topbar"><button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-dir-topbtn">${listSvg}<span class="wt-toggle-label">开场白列表</span></button></div>`;
           }
-          bodyHtml += chosenPosts.map(post => {
+          postsHtml += chosenPosts.map((post, idx) => {
             const media = renderExportMediaHtml(post);
             const repliesDisp = String(post.repliesCount ?? "").trim() !== "" ? post.repliesCount : String((post.comments || []).length);
-            return `<div class="wt-post"><div class="wt-av-sm wt-av-tw">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-tw-row"><b class="wt-tw-a">${escapeHtml(displayName)}</b>${verifiedSvg}<span class="wt-tw-h">${escapeHtml(displayHandle)} · ${escapeHtml(post.time || "刚刚")}</span></div>${post.text ? `<div class="wt-text">${formatPostText(post.text, true)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}<div class="wt-tw-bar"><span>${msgSvg}${escapeHtml(repliesDisp)}</span><span>${repostSvg}${escapeHtml(post.repostsCount || "0")}</span><span${post.likedByMe ? ' style="color:#f43f5e;"' : ""}>${post.likedByMe ? heartFillSvg : heartSvg}${escapeHtml(formatTwitterLikeDisplay(post))}</span><span>${bmSvg}</span></div>${(post.comments && post.comments.length) ? `<div class="wt-tw-cmts">${post.comments.map(c => `<div class="wt-tw-c">${c.replyTo ? `<b>${escapeHtml(c.author)}</b> 回复 <b>${escapeHtml(c.replyTo)}</b>：${escapeHtml(c.text)}` : `<b>${escapeHtml(c.author)}</b>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
+            const postNum = idx + 1;
+            const tAttr = state.workMode === "tavern"
+              ? ` data-wt-tavern-post="1" data-wt-swipe="${postNum}" onclick="window.wtSwitchArchive&&window.wtSwitchArchive(${postNum}, this)"`
+              : "";
+            return `<div class="wt-post${state.workMode === "tavern" ? " wt-tavern-card" : ""}"${tAttr}><div class="wt-av-sm wt-av-tw">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-tw-row"><b class="wt-tw-a">${escapeHtml(displayName)}</b>${verifiedSvg}<span class="wt-tw-h">${escapeHtml(displayHandle)} · ${escapeHtml(post.time || "刚刚")}</span></div>${post.text ? `<div class="wt-text">${formatPostText(post.text, true)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}<div class="wt-tw-bar"><span>${msgSvg}${escapeHtml(repliesDisp)}</span><span>${repostSvg}${escapeHtml(post.repostsCount || "0")}</span><span${post.likedByMe ? ' style="color:#f43f5e;"' : ""}>${post.likedByMe ? heartFillSvg : heartSvg}${escapeHtml(formatTwitterLikeDisplay(post))}</span><span>${bmSvg}</span></div>${(post.comments && post.comments.length) ? `<div class="wt-tw-cmts">${post.comments.map(c => `<div class="wt-tw-c">${c.replyTo ? `<b>${escapeHtml(c.author)}</b> 回复 <b>${escapeHtml(c.replyTo)}</b>：${escapeHtml(c.text)}` : `<b>${escapeHtml(c.author)}</b>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
           }).join("");
         }
 
+        const feedMetaAttrs = ` data-wt-platform="${isWechat ? "wechat" : "twitter"}" data-wt-name="${escapeHtml(displayName)}" data-wt-handle="${escapeHtml(displayHandle)}" data-wt-av="${avUrl}" data-wt-avy="${p.avatarPosY ?? 50}"`;
+        const bodyHtml = state.workMode === "tavern"
+          ? `${headerHtml}<div id="wt-feed-view" class="wt-feed-view"${feedMetaAttrs}>${postsHtml}</div><div id="wt-dir-view" class="wt-dir-view" style="display:none;"><div id="wt-dir-list" class="wt-dir-list"></div></div>`
+          : `${headerHtml}${postsHtml}`;
+
         const css = `<style>
-.wt-export{width:100%;max-width:${maxWidth};margin:0 auto;background:#fff;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;box-sizing:border-box;overflow:hidden;border:none;}
+.wt-export{position:relative;width:100%;max-width:${maxWidth};margin:0 auto;background:#fff;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;box-sizing:border-box;overflow:hidden;border:none;}
 .wt-export *{box-sizing:border-box;}
 .wt-wc-head{position:relative;margin-bottom:36px;}
-.wt-wc-cov{width:100%;aspect-ratio:16/9;max-height:240px;background:#6f6f6f;overflow:hidden;}
+.wt-wc-cov{position:relative;width:100%;aspect-ratio:16/9;max-height:240px;background:#6f6f6f;overflow:hidden;}
+.wt-wc-cam{position:absolute;top:12px;right:12px;z-index:20;width:32px;height:32px;border-radius:999px;border:none;background:rgba(0,0,0,.32);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);transition:background-color .15s;}
+.wt-wc-cam:hover{background:rgba(0,0,0,.52);}
 .wt-wc-cov img,.wt-tw-cov img,.wt-wc-av img,.wt-tw-av img,.wt-av-sm img{width:100%;height:100%;object-fit:cover;display:block;}
 .wt-wc-me{position:absolute;right:14px;bottom:-22px;display:flex;align-items:flex-end;gap:10px;}
 .wt-wc-name{color:#fff;font-weight:600;font-size:15px;padding-bottom:26px;text-shadow:0 1px 4px rgba(0,0,0,.45);}
@@ -4502,6 +4597,37 @@
 .wt-tw-cmts{margin-top:10px;padding-top:8px;border-top:1px solid #f4f4f5;font-size:12px;line-height:1.55;color:#3f3f46;}
 .wt-tw-c{margin-top:4px;word-break:break-word;}
 .wt-tw-c b{color:#18181b;}
+.wt-tavern-card{cursor:pointer;transition:background-color .18s ease,opacity .18s ease;}
+.wt-tavern-card:hover{background:#fafafa;}
+.wt-tavern-toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:rgba(24,24,27,.92);color:#fff;font-size:12px;padding:6px 14px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:10001;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis;}
+.wt-tavern-toast.show{opacity:1;}
+.wt-tw-toprow{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;}
+.wt-tw-toprow .wt-tw-av{margin:-39px 0 0;}
+.wt-wc-cam.is-active{background:rgba(24,24,27,.82);box-shadow:0 0 0 2px rgba(255,255,255,.55);}
+.wt-tw-dirbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:999px;border:1px solid #d4d4d8;background:#fff;color:#18181b;font-size:12px;font-weight:700;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s;}
+.wt-tw-dirbtn:hover{background:#f4f4f5;}
+.wt-tw-dirbtn.is-active{background:#18181b;border-color:#18181b;color:#fff;}
+.wt-dir-topbar{display:flex;justify-content:flex-end;padding:10px 14px 4px;}
+.wt-dir-topbtn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;border:1px solid #e4e4e7;background:#f4f4f5;color:#27272a;font-size:12px;font-weight:600;cursor:pointer;}
+.wt-dir-topbtn.is-active{background:#18181b;border-color:#18181b;color:#fff;}
+.wt-dir-view{padding:12px 14px 18px;border-top:1px solid #f4f4f5;}
+.wt-dir-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 2px 10px;border-bottom:1px solid #f4f4f5;margin-bottom:10px;}
+.wt-dir-bartitle{font-size:13px;font-weight:700;color:#18181b;}
+.wt-dir-back{border:1px solid #e4e4e7;background:#fafafa;color:#3f3f46;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;cursor:pointer;}
+.wt-dir-back:hover{background:#f4f4f5;}
+.wt-dir-list{display:flex;flex-direction:column;gap:14px;}
+.wt-dir-grp{display:flex;flex-direction:column;}
+.wt-dir-ghead{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:#3f3f46;padding:0 2px 6px;margin-bottom:6px;border-bottom:1.5px solid #27272a;}
+.wt-dir-gcount{font-size:10.5px;font-weight:600;color:#71717a;background:#f4f4f5;padding:1px 7px;border-radius:999px;}
+.wt-dir-item{display:flex;align-items:flex-start;gap:10px;padding:9px 6px;border-bottom:1px solid #f4f4f5;cursor:pointer;transition:background-color .15s;}
+.wt-dir-item:last-child{border-bottom:none;}
+.wt-dir-item:hover{background:#fafafa;}
+.wt-dir-idx{width:24px;height:24px;border-radius:6px;background:#f4f4f5;color:#3f3f46;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.wt-dir-item:hover .wt-dir-idx{background:#18181b;color:#fff;}
+.wt-dir-ibody{flex:1;min-width:0;}
+.wt-dir-iname{font-size:13px;font-weight:700;color:#18181b;line-height:1.4;}
+.wt-dir-idesc{font-size:11.5px;color:#52525b;line-height:1.55;margin-top:2px;word-break:break-word;}
+.wt-dir-empty{color:#a1a1aa;font-style:italic;}
 </style>`;
 
         const docTitle = `${escapeHtml(displayName)} - ${isWechat ? "微信朋友圈" : "推特 / X"}`;
@@ -4515,7 +4641,245 @@ ${css}
 <style>html,body{margin:0;padding:0;border:0;background:#fff;width:100%;overflow-x:hidden;}</style>
 </head>
 <body>
-<div class="wt-export">${bodyHtml}</div>
+<div class="wt-export">${bodyHtml}${state.workMode === "tavern" ? `<div id="wt-tavern-toast" class="wt-tavern-toast"></div>` : ""}</div>
+${state.workMode === "tavern" ? `<script>
+(function initWtTavernSwitcher(){
+  var toastEl = document.getElementById("wt-tavern-toast");
+  var feedView = document.getElementById("wt-feed-view");
+  var dirView = document.getElementById("wt-dir-view");
+  var dirList = document.getElementById("wt-dir-list");
+  var toggleBtn = document.getElementById("wt-toggle-dir-btn");
+  var toastTimer = null;
+  var showingDir = false;
+  var swipesCache = null;
+
+  var platform = feedView ? (feedView.getAttribute("data-wt-platform") || "wechat") : "wechat";
+  var authorName = feedView ? (feedView.getAttribute("data-wt-name") || "") : "";
+  var authorHandle = feedView ? (feedView.getAttribute("data-wt-handle") || "") : "";
+  var authorAv = feedView ? (feedView.getAttribute("data-wt-av") || "") : "";
+  var authorAvY = feedView ? (feedView.getAttribute("data-wt-avy") || "50") : "50";
+
+  function showMsg(msg){
+    if(!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+  }
+
+  function makeEl(tag, cls, text){
+    var el = document.createElement(tag);
+    if(cls) el.className = cls;
+    if(text !== undefined && text !== null) el.textContent = String(text);
+    return el;
+  }
+
+  window.wtToggleDir = function(ev){
+    if(ev && ev.stopPropagation) ev.stopPropagation();
+    showingDir = !showingDir;
+    if(feedView) feedView.style.display = showingDir ? "none" : "";
+    if(dirView) dirView.style.display = showingDir ? "block" : "none";
+    if(toggleBtn){
+      toggleBtn.classList.toggle("is-active", showingDir);
+      var lbl = toggleBtn.querySelector(".wt-toggle-label");
+      if(lbl) lbl.textContent = showingDir ? (platform === "twitter" ? "返回推文" : "返回动态") : "开场白列表";
+    }
+  };
+
+  async function switchArchiveNode(swipeId, node){
+    if(node){
+      node.style.opacity = "0.5";
+      node.style.pointerEvents = "none";
+    }
+    try {
+      if(typeof setChatMessages === "function"){
+        await setChatMessages([{ message_id: 0, swipe_id: swipeId }]);
+      } else if(typeof setChatMessage === "function"){
+        if(!swipesCache && typeof getChatMessages === "function"){
+          var m = await getChatMessages("0", { include_swipe: true });
+          if(m && m[0] && m[0].swipes) swipesCache = m[0].swipes;
+        }
+        if(swipesCache && swipesCache[swipeId] !== undefined){
+          await setChatMessage(swipesCache[swipeId], 0, { swipe_id: swipeId, refresh: "display_and_render_current" });
+        }
+      } else {
+        showMsg("预览：将切换至开场白 #" + swipeId);
+      }
+    } catch(error){
+      console.error("Archive: 调取节点失败", error);
+      if(typeof setChatMessage === "function"){
+        try {
+          if(!swipesCache && typeof getChatMessages === "function"){
+            var m2 = await getChatMessages("0", { include_swipe: true });
+            if(m2 && m2[0] && m2[0].swipes) swipesCache = m2[0].swipes;
+          }
+          if(swipesCache && swipesCache[swipeId] !== undefined){
+            await setChatMessage(swipesCache[swipeId], 0, { swipe_id: swipeId, refresh: "display_and_render_current" });
+          }
+        } catch(e2){
+          console.error("Archive: 备用切换失败", e2);
+        }
+      }
+    }
+    if(node){
+      node.style.opacity = "1";
+      node.style.pointerEvents = "auto";
+    }
+  }
+  window.wtSwitchArchive = switchArchiveNode;
+
+  function appendEmptyGreetingPost(swipeId, emptyIdx){
+    if(!feedView) return;
+    var copyPool = [
+      "这条先空着吧，暂时还没想好发什么——点进来就是空白开场白，你想怎么开场都可以。",
+      "这里也先留个空位，还没想到要写什么，点进来直接自定义开场吧。",
+      "先空着占个位置，这条开场白留给你自己发挥。"
+    ];
+    var copy = copyPool[(emptyIdx || 0) % copyPool.length];
+
+    var postEl = makeEl("div", "wt-post wt-tavern-card");
+    postEl.setAttribute("data-wt-tavern-post", "1");
+    postEl.setAttribute("data-wt-swipe", String(swipeId));
+    postEl.addEventListener("click", function(){ switchArchiveNode(swipeId, postEl); });
+
+    var avWrap = makeEl("div", platform === "wechat" ? "wt-av-sm wt-av-wc" : "wt-av-sm wt-av-tw");
+    if(authorAv){
+      var img = document.createElement("img");
+      img.src = authorAv;
+      img.alt = "";
+      img.style.objectPosition = "50% " + authorAvY + "%";
+      avWrap.appendChild(img);
+    }
+    postEl.appendChild(avWrap);
+
+    var body = makeEl("div", "wt-body");
+    if(platform === "wechat"){
+      body.appendChild(makeEl("div", "wt-author-wc", authorName));
+      body.appendChild(makeEl("div", "wt-text", copy));
+      var foot = makeEl("div", "wt-foot");
+      foot.appendChild(makeEl("span", "", "刚刚"));
+      var more = makeEl("span", "wt-wc-more");
+      more.appendChild(document.createElement("i"));
+      more.appendChild(document.createElement("i"));
+      foot.appendChild(more);
+      body.appendChild(foot);
+    } else {
+      var row = makeEl("div", "wt-tw-row");
+      row.appendChild(makeEl("b", "wt-tw-a", authorName));
+      row.appendChild(makeEl("span", "wt-tw-h", authorHandle + " · 刚刚"));
+      body.appendChild(row);
+      body.appendChild(makeEl("div", "wt-text", copy));
+      var bar = makeEl("div", "wt-tw-bar");
+      bar.appendChild(makeEl("span", "", "0"));
+      bar.appendChild(makeEl("span", "", "0"));
+      bar.appendChild(makeEl("span", "", "0"));
+      body.appendChild(bar);
+    }
+    postEl.appendChild(body);
+    feedView.appendChild(postEl);
+  }
+
+  function renderArchiveGroups(archiveGroups){
+    if(!dirList) return;
+    dirList.textContent = "";
+    Object.keys(archiveGroups).forEach(function(groupName){
+      var items = archiveGroups[groupName];
+      var grp = makeEl("div", "wt-dir-grp");
+      var ghead = makeEl("div", "wt-dir-ghead");
+      ghead.appendChild(makeEl("span", "", groupName));
+      grp.appendChild(ghead);
+
+      items.forEach(function(item, idx){
+        var numStr = (idx + 1) < 10 ? ("0" + (idx + 1)) : String(idx + 1);
+        var row = makeEl("div", "wt-dir-item");
+        row.appendChild(makeEl("div", "wt-dir-idx", numStr));
+        var ibody = makeEl("div", "wt-dir-ibody");
+        ibody.appendChild(makeEl("div", "wt-dir-iname", item.title));
+        ibody.appendChild(makeEl("div", "wt-dir-idesc", item.desc));
+        row.appendChild(ibody);
+        row.addEventListener("click", function(){ switchArchiveNode(item.id, row); });
+        grp.appendChild(row);
+      });
+      dirList.appendChild(grp);
+    });
+  }
+
+  function renderSysMsg(text){
+    if(!dirList) return;
+    dirList.textContent = "";
+    var msg = makeEl("div", "wt-dir-idesc wt-dir-empty", text);
+    msg.style.textAlign = "center";
+    msg.style.padding = "18px 0";
+    dirList.appendChild(msg);
+  }
+
+  var existingPostsCount = document.querySelectorAll("[data-wt-tavern-post]").length;
+
+  if(typeof getChatMessages !== "function"){
+    var previewGroups = { "未收录": [] };
+    for(var p = 1; p <= existingPostsCount; p++){
+      previewGroups["未收录"].push({
+        id: p,
+        title: "自定义开场白 " + (p < 10 ? "0" + p : p),
+        desc: "请自定义开场白"
+      });
+    }
+    renderArchiveGroups(previewGroups);
+    return;
+  }
+
+  (async function loadArchive(){
+    try {
+      var messages = await getChatMessages("0", { include_swipe: true });
+      if(!messages || messages.length === 0 || !messages[0].swipes || messages[0].swipes.length <= 1){
+        renderSysMsg("[NULL] 暂无可切换的开场白。");
+        return;
+      }
+
+      var swipes = messages[0].swipes;
+      swipesCache = swipes;
+      var archiveGroups = {};
+      var cOpen = String.fromCharCode(60, 33, 45, 45);
+      var cClose = String.fromCharCode(45, 45, 62);
+    var reTitle = new RegExp(cOpen + "\\\\s*title:\\\\s*([\\\\s\\\\S]*?)\\\\s*" + cClose);
+    var reDesc = new RegExp(cOpen + "\\\\s*desc:\\\\s*([\\\\s\\\\S]*?)\\\\s*" + cClose);
+    var reGroup = new RegExp(cOpen + "\\\\s*group:\\\\s*([\\\\s\\\\S]*?)\\\\s*" + cClose);
+
+      var emptyIdx = 0;
+      for(var i = 1; i < swipes.length; i++){
+        var content = String(swipes[i] || "");
+        var title = "自定义开场白 " + (i < 10 ? "0" + i : i);
+        var description = "请自定义开场白";
+        var groupName = "未收录";
+
+        var titleMatch = content.match(reTitle);
+        if(titleMatch && titleMatch[1].trim()) title = titleMatch[1].trim();
+
+        var descMatch = content.match(reDesc);
+        if(descMatch && descMatch[1].trim()) description = descMatch[1].trim();
+
+        var groupMatch = content.match(reGroup);
+        if(groupMatch && groupMatch[1].trim()) groupName = groupMatch[1].trim();
+
+        if(!archiveGroups[groupName]){
+          archiveGroups[groupName] = [];
+        }
+        archiveGroups[groupName].push({ id: i, title: title, desc: description });
+
+        if(i > existingPostsCount){
+          appendEmptyGreetingPost(i, emptyIdx);
+          emptyIdx++;
+        }
+      }
+
+      renderArchiveGroups(archiveGroups);
+    } catch(error){
+      console.error("Archive: 数据库检索异常", error);
+      renderSysMsg("[FATAL] 开场白列表读取异常。");
+    }
+  })();
+})();
+${"</scr" + "ipt>"}` : ""}
 <script>
 (function(){
   try {
@@ -4531,7 +4895,7 @@ ${css}
     }
   } catch (e) {}
 })();
-<\/script>
+${"</scr" + "ipt>"}
 </body>
 </html>`;
         const wrapFence = document.getElementById("code-wrap-fence") && document.getElementById("code-wrap-fence").checked;
@@ -4551,7 +4915,78 @@ ${css}
         document.getElementById("code-char-count").textContent = `${code.length} 字符`;
       }
 
+
+      function generateUuidV4() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          const v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      }
+
+      document.getElementById("btn-copy-tavern-tags").addEventListener("click", async () => {
+        const tagTpl = "<!-- group: 分组名 -->\n<!-- title: 开场白标题 -->\n<!-- desc: 简介描述 -->";
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(tagTpl);
+          } else {
+            const ta = document.createElement("textarea");
+            ta.value = tagTpl;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+          }
+          showToast("已复制 group / title / desc 标签模板");
+        } catch (err) {
+          showToast("复制失败，请手动选中复制");
+        }
+      });
+
+      document.getElementById("btn-download-tavern-json").addEventListener("click", () => {
+        const scriptName = (document.getElementById("input-tavern-script-name").value || "").trim() || "开场白";
+        const findRegex = (document.getElementById("input-tavern-find-regex").value || "").trim() || "【开场白】";
+        const disabled = !!document.getElementById("input-tavern-regex-disabled").checked;
+        const rawCode = document.getElementById("code-export-output").textContent;
+        const fenced = rawCode.startsWith("```html") ? rawCode : ("```html\n" + rawCode + "\n```");
+
+        const regexJson = {
+          id: generateUuidV4(),
+          scriptName,
+          disabled,
+          runOnEdit: true,
+          findRegex,
+          trimStrings: [],
+          replaceString: fenced,
+          placement: [2],
+          substituteRegex: 0,
+          minDepth: null,
+          maxDepth: null,
+          markdownOnly: true,
+          promptOnly: false
+        };
+
+        const blob = new Blob([JSON.stringify(regexJson, null, 4)], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `regex-${scriptName}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast(`已导出酒馆正则文件 regex-${scriptName}.json`);
+      });
+
       function openExportCodeModal() {
+        const isTavern = state.workMode === "tavern";
+        document.getElementById("tavern-regex-config").classList.toggle("hidden", !isTavern);
+        const jsonBtn = document.getElementById("btn-download-tavern-json");
+        jsonBtn.classList.toggle("hidden", !isTavern);
+        jsonBtn.classList.toggle("inline-flex", isTavern);
         codeIncludeHeader = true;
         codeSelectedPostIds = new Set(state.posts.map(p => p.id));
         renderCodeExportChecklist();
