@@ -4883,15 +4883,45 @@ ${state.workMode === "tavern" ? `<script>
       foot.appendChild(more);
       body.appendChild(foot);
     } else {
+      var makeIcon = function(ds){
+        var ns = "http://www.w3.org/2000/svg";
+        var s = document.createElementNS(ns, "svg");
+        s.setAttribute("viewBox", "0 0 24 24");
+        s.setAttribute("width", "13");
+        s.setAttribute("height", "13");
+        s.setAttribute("fill", "none");
+        s.setAttribute("stroke", "currentColor");
+        s.setAttribute("stroke-width", "2");
+        ds.forEach(function(d){
+          var pt = document.createElementNS(ns, "path");
+          pt.setAttribute("d", d);
+          s.appendChild(pt);
+        });
+        return s;
+      };
       var row = makeEl("div", "wt-tw-row");
       row.appendChild(makeEl("b", "wt-tw-a", authorName));
+      var vSvg = document.querySelector(".wt-verified");
+      if(vSvg) row.appendChild(vSvg.cloneNode(true));
       row.appendChild(makeEl("span", "wt-tw-h", authorHandle + " · 刚刚"));
       body.appendChild(row);
       body.appendChild(makeEl("div", "wt-text", copy));
       var bar = makeEl("div", "wt-tw-bar");
-      bar.appendChild(makeEl("span", "", "0"));
-      bar.appendChild(makeEl("span", "", "0"));
-      bar.appendChild(makeEl("span", "", "0"));
+      var sMsg = makeEl("span");
+      sMsg.appendChild(makeIcon(["M7.9 20A9 9 0 1 0 4 16.1L2 22Z"]));
+      sMsg.appendChild(document.createTextNode("0"));
+      var sRep = makeEl("span");
+      sRep.appendChild(makeIcon(["m17 2 4 4-4 4", "M3 11v-1a4 4 0 0 1 4-4h14", "m7 22-4-4 4-4", "M21 13v1a4 4 0 0 1-4 4H3"]));
+      sRep.appendChild(document.createTextNode("0"));
+      var sLike = makeEl("span");
+      sLike.appendChild(makeIcon(["M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"]));
+      sLike.appendChild(document.createTextNode("0"));
+      var sBm = makeEl("span");
+      sBm.appendChild(makeIcon(["m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"]));
+      bar.appendChild(sMsg);
+      bar.appendChild(sRep);
+      bar.appendChild(sLike);
+      bar.appendChild(sBm);
       body.appendChild(bar);
     }
     postEl.appendChild(body);
