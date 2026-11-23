@@ -745,7 +745,7 @@
 
           <!-- Batch Add Form -->
           <div id="gal-form-batch" class="hidden space-y-2">
-            <textarea id="input-gal-batch" rows="4" placeholder="每行粘贴一个图床链接，也支持「名称 | 链接」格式：&#10;https://img.example.com/1.jpg&#10;夜景立绘 | https://img.example.com/2.png" class="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:border-zinc-900 resize-y"></textarea>
+            <textarea id="input-gal-batch" rows="4" placeholder="每行粘贴一个图床链接，也支持「备注：链接」或「名称 | 链接」格式：&#10;https://img.example.com/1.jpg&#10;蛋糕：https://img.example.com/2.png" class="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:border-zinc-900 resize-y"></textarea>
             <button id="btn-gal-add-batch" type="button" class="w-full py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium">一键批量加入图库</button>
           </div>
         </section>
@@ -764,9 +764,12 @@
 
         <!-- Gallery Items Grid -->
         <section class="space-y-2">
-          <div class="flex items-center justify-between">
-            <span id="gal-list-title" class="text-xs font-semibold text-zinc-800">全部图片</span>
-            <button id="btn-delete-active-group" type="button" class="hidden text-[11px] text-red-500 hover:text-red-700">删除当前分组</button>
+          <div class="flex items-center justify-between gap-2">
+            <span id="gal-list-title" class="text-xs font-semibold text-zinc-800 truncate">全部图片</span>
+            <div class="flex items-center gap-2 shrink-0">
+              <button id="btn-gal-export-links" type="button" class="px-2 py-0.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-white text-[10.5px] font-medium transition-colors">导出备注链接</button>
+              <button id="btn-delete-active-group" type="button" class="hidden text-[11px] text-red-500 hover:text-red-700">删除当前分组</button>
+            </div>
           </div>
           <div id="gal-items-grid" class="grid grid-cols-2 gap-2"></div>
         </section>
@@ -1051,7 +1054,36 @@
   </div>
 
   <!-- Export Responsive HTML/CSS Component Code Modal -->
-  <div id="export-code-modal" class="hidden fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <!-- MODAL: EXPORT GALLERY REMARKS & LINKS -->
+  <div id="gal-export-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between shrink-0">
+        <div>
+          <h2 class="text-sm font-bold text-zinc-900">导出图库备注与链接</h2>
+          <p class="text-[11px] text-zinc-500">按「备注：链接」格式逐行导出，可直接复制或保存为文本</p>
+        </div>
+        <button id="btn-gal-export-close" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3 overflow-y-auto flex-1">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex bg-zinc-100 rounded-lg p-0.5">
+            <button id="btn-gal-exp-scope-all" type="button" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-zinc-900 shadow-2xs">全部图库</button>
+            <button id="btn-gal-exp-scope-cur" type="button" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-zinc-600">当前分组</button>
+          </div>
+          <span id="gal-export-count" class="text-[11px] text-zinc-500">共 0 条</span>
+        </div>
+        <textarea id="gal-export-textarea" rows="10" class="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-xs font-mono text-zinc-800 leading-relaxed focus:outline-none focus:border-zinc-900 resize-y" placeholder="暂无可导出的图床链接"></textarea>
+      </div>
+      <div class="px-4 py-3 border-t border-zinc-100 bg-zinc-50/70 flex items-center justify-end gap-2 shrink-0">
+        <button id="btn-gal-export-download" type="button" class="px-3 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 text-xs font-semibold transition-colors">下载 .txt</button>
+        <button id="btn-gal-export-copy" type="button" class="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors">一键复制</button>
+      </div>
+    </div>
+  </div>
+
+<div id="export-code-modal" class="hidden fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white rounded-2xl shadow-2xl border border-zinc-200 max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 sm:px-5 py-3.5 border-b border-zinc-200 flex items-center justify-between">
         <div>
@@ -4088,7 +4120,7 @@
               <button type="button" data-gal-delete="${item.id}" title="从图库删除" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 hover:bg-red-600 text-white text-[10px] flex items-center justify-center">×</button>
             </div>
             <div class="p-2 space-y-1.5">
-              <div class="text-[11px] font-medium text-zinc-800 truncate" title="${escapeHtml(item.url)}">${escapeHtml(item.name || item.url.split("/").pop() || "未命名图片")}</div>
+              <input type="text" data-gal-edit-name="${item.id}" value="${escapeHtml(item.name || "")}" placeholder="填写备注（如：蛋糕）" title="${escapeHtml(item.url)}" class="w-full rounded border border-zinc-200 bg-white px-1.5 py-1 text-[11px] font-medium text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900" />
               <select data-gal-move-group="${item.id}" class="w-full rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] text-zinc-600 focus:outline-none">
                 ${state.galleryGroups.map(g => `<option value="${escapeHtml(g)}" ${item.group === g ? "selected" : ""}>${escapeHtml(g)}</option>`).join("")}
               </select>
@@ -4107,7 +4139,7 @@
           const item = {
             id: "gal-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
             url,
-            name: String(entry.name || "").trim() || (url.split("?")[0].split("/").pop() || "图床图片").slice(0, 24),
+            name: String(entry.name || "").trim(),
             group,
             w: 0,
             h: 0,
@@ -4187,14 +4219,11 @@
         const lines = ta.value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
         const entries = [];
         lines.forEach(line => {
-          if (line.includes("|")) {
-            const parts = line.split("|");
-            const urlPart = parts.pop().trim();
-            const namePart = parts.join("|").trim();
-            if (isHostedUrl(urlPart)) entries.push({ name: namePart, url: urlPart });
-          } else {
-            const match = line.match(/https?:\/\/\S+/i);
-            if (match) entries.push({ name: "", url: match[0] });
+          const urlMatch = line.match(/https?:\/\/\S+/i);
+          if (urlMatch) {
+            const urlPart = urlMatch[0].trim();
+            const before = line.slice(0, urlMatch.index).trim().replace(/[|｜:：\-—]+\s*$/, "").trim();
+            if (isHostedUrl(urlPart)) entries.push({ name: before, url: urlPart });
           }
         });
         if (entries.length === 0) {
@@ -4258,6 +4287,96 @@
           renderGalleryManager();
           scheduleAutoSave();
         }
+      });
+
+      document.getElementById("gal-items-grid").addEventListener("input", (e) => {
+        const inp = e.target.closest("[data-gal-edit-name]");
+        if (!inp) return;
+        const item = state.galleryImages.find(x => x.id === inp.dataset.galEditName);
+        if (item) {
+          item.name = inp.value;
+          scheduleAutoSave();
+        }
+      });
+
+      let galExportScope = "ALL";
+      function renderGalExportContent() {
+        const list = (galExportScope === "CURRENT" && state.activeGalleryGroup !== "ALL")
+          ? state.galleryImages.filter(x => x.group === state.activeGalleryGroup)
+          : state.galleryImages;
+        const lines = list.map(item => {
+          const remark = (item.name || "").trim() || "未备注";
+          return `${remark}：${item.url}`;
+        });
+        document.getElementById("gal-export-textarea").value = lines.join("\n");
+        document.getElementById("gal-export-count").textContent = `共 ${list.length} 条`;
+
+        const allBtn = document.getElementById("btn-gal-exp-scope-all");
+        const curBtn = document.getElementById("btn-gal-exp-scope-cur");
+        const hasCurGroup = state.activeGalleryGroup !== "ALL";
+        curBtn.classList.toggle("hidden", !hasCurGroup);
+        if (hasCurGroup) curBtn.textContent = `当前分组 (${state.activeGalleryGroup})`;
+        allBtn.className = galExportScope === "ALL"
+          ? "px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-zinc-900 shadow-2xs"
+          : "px-2.5 py-1 rounded-md text-[11px] font-medium text-zinc-600";
+        curBtn.className = (hasCurGroup ? "" : "hidden ") + (galExportScope === "CURRENT"
+          ? "px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-zinc-900 shadow-2xs"
+          : "px-2.5 py-1 rounded-md text-[11px] font-medium text-zinc-600");
+      }
+
+      document.getElementById("btn-gal-export-links").addEventListener("click", () => {
+        if (state.galleryImages.length === 0) {
+          showToast("图库里还没有图片，请先添加图床链接");
+          return;
+        }
+        galExportScope = state.activeGalleryGroup === "ALL" ? "ALL" : "CURRENT";
+        renderGalExportContent();
+        document.getElementById("gal-export-modal").classList.remove("hidden");
+      });
+      document.getElementById("btn-gal-exp-scope-all").addEventListener("click", () => {
+        galExportScope = "ALL";
+        renderGalExportContent();
+      });
+      document.getElementById("btn-gal-exp-scope-cur").addEventListener("click", () => {
+        galExportScope = "CURRENT";
+        renderGalExportContent();
+      });
+      document.getElementById("btn-gal-export-close").addEventListener("click", () => {
+        document.getElementById("gal-export-modal").classList.add("hidden");
+      });
+      document.getElementById("gal-export-modal").addEventListener("click", (e) => {
+        if (e.target.id === "gal-export-modal") document.getElementById("gal-export-modal").classList.add("hidden");
+      });
+      document.getElementById("btn-gal-export-copy").addEventListener("click", async () => {
+        const text = document.getElementById("gal-export-textarea").value;
+        if (!text.trim()) { showToast("暂无内容可复制"); return; }
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const ta = document.getElementById("gal-export-textarea");
+            ta.select();
+            document.execCommand("copy");
+          }
+          showToast("已复制图库备注与链接");
+        } catch (err) {
+          showToast("复制失败，请手动全选复制");
+        }
+      });
+      document.getElementById("btn-gal-export-download").addEventListener("click", () => {
+        const text = document.getElementById("gal-export-textarea").value;
+        if (!text.trim()) { showToast("暂无内容可导出"); return; }
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const suffix = (galExportScope === "CURRENT" && state.activeGalleryGroup !== "ALL") ? `_${state.activeGalleryGroup}` : "";
+        a.download = `图库备注链接${suffix}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast("已导出图库备注链接 .txt");
       });
 
       // ============================================================
