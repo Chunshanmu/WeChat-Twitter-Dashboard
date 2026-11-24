@@ -798,11 +798,15 @@
         </div>
         <div class="flex items-center gap-1.5">
           <input id="project-import-input" type="file" accept=".json,application/json" class="hidden" />
-          <button id="btn-import-project-editor" type="button" class="flex-1 py-1.5 px-2.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium flex items-center justify-center gap-1 transition-colors">
+          <button id="btn-open-import-code" type="button" title="导入已导出的 HTML 代码或酒馆正则 .json 继续修改" class="flex-1 py-1.5 px-2 rounded-lg border border-indigo-200 bg-indigo-50/80 hover:bg-indigo-100 text-indigo-700 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors whitespace-nowrap">
+            <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+            <span>导入代码</span>
+          </button>
+          <button id="btn-import-project-editor" type="button" class="flex-1 py-1.5 px-2 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium flex items-center justify-center gap-1 transition-colors whitespace-nowrap">
             <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
             <span>导入存档</span>
           </button>
-          <button id="btn-export-project-editor" type="button" class="flex-1 py-1.5 px-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-medium flex items-center justify-center gap-1 transition-colors">
+          <button id="btn-export-project-editor" type="button" class="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-medium flex items-center justify-center gap-1 transition-colors whitespace-nowrap">
             <i data-lucide="save" class="w-3.5 h-3.5"></i>
             <span>保存存档</span>
           </button>
@@ -1066,7 +1070,46 @@
   </div>
 
   <!-- Export Responsive HTML/CSS Component Code Modal -->
-    <!-- MODAL: EXPORT GALLERY REMARKS & LINKS -->
+    <!-- MODAL: IMPORT EXPORTED HTML CODE OR SILLYTAVERN REGEX JSON -->
+  <div id="import-code-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between shrink-0">
+        <div>
+          <h2 class="text-sm font-bold text-zinc-900">导入代码 / 酒馆正则继续编辑</h2>
+          <p class="text-[11px] text-zinc-500">支持导入本工具导出的纯 HTML 代码、带 ```html 的代码块或酒馆正则 .json</p>
+        </div>
+        <button id="btn-import-code-close" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3 overflow-y-auto flex-1">
+        <div class="flex items-center justify-between gap-2 p-3 rounded-xl border border-dashed border-indigo-300 bg-indigo-50/50">
+          <div class="min-w-0">
+            <div class="text-xs font-semibold text-indigo-900">方式一：选择本地文件导入</div>
+            <div class="text-[10.5px] text-indigo-700/80">支持 .html / .htm / 酒馆正则 .json / .txt</div>
+          </div>
+          <input id="input-import-code-file" type="file" accept=".html,.htm,.json,.txt,text/html,application/json,text/plain" class="hidden" />
+          <button id="btn-pick-import-code-file" type="button" class="shrink-0 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors">选择文件</button>
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="textarea-import-code" class="text-xs font-semibold text-zinc-800">方式二：直接粘贴代码或正则 JSON 内容</label>
+            <button id="btn-clear-import-code" type="button" class="text-[11px] text-zinc-400 hover:text-zinc-700">清空</button>
+          </div>
+          <textarea id="textarea-import-code" rows="9" placeholder="把导出的 HTML 代码、```html ... ``` 代码块，或 regex-开场白.json 里的全部内容粘贴到这里..." class="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-xs font-mono text-zinc-800 leading-relaxed focus:outline-none focus:border-zinc-900 resize-y"></textarea>
+        </div>
+        <div class="text-[10.5px] text-zinc-500 bg-zinc-50 border border-zinc-200/80 rounded-lg px-2.5 py-2 leading-relaxed">
+          导入后会自动还原平台（朋友圈/推特）、主页资料、所有动态图文排版、点赞评论数据，并将外链图片自动收录到图库（支持点击「撤回」恢复导入前状态）。
+        </div>
+      </div>
+      <div class="px-4 py-3 border-t border-zinc-100 bg-zinc-50/70 flex items-center justify-end gap-2 shrink-0">
+        <button id="btn-import-code-cancel" type="button" class="px-3 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-semibold transition-colors">取消</button>
+        <button id="btn-run-import-code" type="button" class="px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors">解析并导入编辑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EXPORT GALLERY REMARKS & LINKS -->
   <div id="gal-export-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between shrink-0">
@@ -5161,6 +5204,383 @@ ${"</scr" + "ipt>"}
       });
       document.getElementById("export-code-modal").addEventListener("click", (e) => {
         if (e.target.id === "export-code-modal") document.getElementById("export-code-modal").classList.add("hidden");
+      });
+
+      // ============================================================
+      // RE-IMPORT EXPORTED HTML CODE OR SILLYTAVERN REGEX .JSON
+      // ============================================================
+      function parseAndImportExportedCode(rawInput) {
+        let text = String(rawInput || "").trim();
+        if (!text) {
+          showToast("请先粘贴代码或选择要导入的文件");
+          return false;
+        }
+
+        let isRegexJson = false;
+        let regexMeta = null;
+
+        // 1) Try JSON unwrap (either SillyTavern regex .json OR project archive .json)
+        if (text.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(text);
+            if (parsed && parsed.profile && Array.isArray(parsed.posts)) {
+              applyRestoredData(parsed);
+              renderAll();
+              showToast("检测到项目存档文件，已直接恢复完整项目");
+              return true;
+            }
+            if (parsed && typeof parsed.replaceString === "string") {
+              isRegexJson = true;
+              regexMeta = {
+                scriptName: parsed.scriptName || "开场白",
+                findRegex: parsed.findRegex || "【开场白】",
+                disabled: !!parsed.disabled
+              };
+              text = parsed.replaceString.trim();
+            }
+          } catch (_) {
+            // Not JSON, proceed as HTML text
+          }
+        }
+
+        // 2) Strip Markdown ```html ... ``` code fences if present
+        const fenceMatch = text.match(/```(?:html)?\s*([\s\S]*?)```/i);
+        if (fenceMatch) {
+          text = fenceMatch[1].trim();
+        }
+
+        if (!text.includes("wt-export") && !text.includes("wt-post")) {
+          showToast("未识别到本工具导出的朋友圈/推特组件代码");
+          return false;
+        }
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, "text/html");
+        const root = doc.querySelector(".wt-export") || doc.body;
+        if (!root) {
+          showToast("解析 HTML 结构失败");
+          return false;
+        }
+
+        // 3) Detect platform & work mode
+        const isWechat = !!(root.querySelector(".wt-wc-head") || root.querySelector(".wt-author-wc") || root.querySelector(".wt-av-wc"));
+        const isTavern = isRegexJson || !!(doc.querySelector("#wt-dir-view, #wt-dir-mask") || text.includes("initWtTavernSwitcher"));
+
+        // 4) Extract avatar URL & avatarPosY (supports both new .wt-av-bg CSS and old <img> tags)
+        let avatarUrl = "";
+        let avatarPosY = 18;
+        const styleText = Array.from(doc.querySelectorAll("style")).map(s => s.textContent || "").join("\n");
+        const avCssMatch = styleText.match(/\.wt-av-bg\s*\{[^}]*url\(["']?([^"')]+)["']?\)(?:\s+[\d.]+%?\s+([\d.]+)%)?/i);
+        if (avCssMatch) {
+          avatarUrl = avCssMatch[1].trim();
+          if (avCssMatch[2] !== undefined) avatarPosY = Math.round(parseFloat(avCssMatch[2])) || 18;
+        } else {
+          const avImg = root.querySelector(".wt-wc-av img, .wt-tw-av-in img, .wt-av-sm img");
+          if (avImg) {
+            avatarUrl = avImg.getAttribute("src") || "";
+            const op = avImg.style.objectPosition || "";
+            const posM = op.match(/([\d.]+)%\s+([\d.]+)%/);
+            if (posM) avatarPosY = Math.round(parseFloat(posM[2])) || 18;
+          }
+        }
+
+        // 5) Extract cover URL & position
+        let coverUrl = "";
+        let coverPosX = 50;
+        let coverPosY = 50;
+        const covImg = root.querySelector(".wt-wc-cov img, .wt-tw-cov img");
+        if (covImg) {
+          coverUrl = covImg.getAttribute("src") || "";
+          const op = covImg.style.objectPosition || "";
+          const posM = op.match(/([\d.]+)%\s+([\d.]+)%/);
+          if (posM) {
+            coverPosX = Math.round(parseFloat(posM[1]));
+            coverPosY = Math.round(parseFloat(posM[2]));
+          }
+        }
+
+        // 6) Extract profile text fields
+        const nameEl = root.querySelector(isWechat ? ".wt-wc-name, .wt-author-wc" : ".wt-tw-name, .wt-tw-a");
+        const name = nameEl ? nameEl.textContent.trim() : "";
+        let handle = "@username";
+        const handleEl = root.querySelector(".wt-tw-handle");
+        if (handleEl) {
+          handle = handleEl.textContent.trim() || "@username";
+        } else if (!isWechat) {
+          const hRow = root.querySelector(".wt-tw-h");
+          if (hRow) handle = (hRow.textContent || "").split("·")[0].trim() || "@username";
+        }
+        const bioEl = root.querySelector(isWechat ? ".wt-wc-bio" : ".wt-tw-bio");
+        const bio = bioEl ? bioEl.textContent.trim() : "";
+
+        let location = "";
+        let joinedDate = "2024年加入";
+        root.querySelectorAll(".wt-tw-meta span").forEach(sp => {
+          const v = sp.textContent.trim();
+          if (!v) return;
+          if (v.includes("加入") || /\d{4}/.test(v)) joinedDate = v;
+          else location = v;
+        });
+
+        let following = "0";
+        let followers = "0";
+        root.querySelectorAll(".wt-tw-stat span").forEach(sp => {
+          const txt = sp.textContent || "";
+          const b = sp.querySelector("b");
+          const num = b ? b.textContent.trim() : "0";
+          if (txt.includes("正在关注")) following = num;
+          else if (txt.includes("关注者")) followers = num;
+        });
+
+        // 7) Extract posts
+        const discoveredUrls = [];
+        const trackUrl = (u) => { if (isHostedUrl(u) && !discoveredUrls.includes(u)) discoveredUrls.push(u); };
+        if (avatarUrl) trackUrl(avatarUrl);
+        if (coverUrl) trackUrl(coverUrl);
+
+        const extractPlainText = (el) => {
+          if (!el) return "";
+          const clone = el.cloneNode(true);
+          clone.querySelectorAll("br").forEach(br => br.replaceWith("\n"));
+          return (clone.textContent || "").trim();
+        };
+
+        const postEls = Array.from(root.querySelectorAll(".wt-post"));
+        const importedPosts = postEls.map((el, idx) => {
+          const pText = extractPlainText(el.querySelector(".wt-text"));
+          let layout = "asymmetric";
+          let polaroidRatio = "34";
+          let polaroidSize = 46;
+          let polaroidBorder = 8;
+          let polaroidX = 52;
+          let polaroidY = 62;
+          let polaroidTilt = false;
+          let filmHeight = 236;
+          const images = [];
+
+          const addImgFrom = (imgEl) => {
+            const s = imgEl ? (imgEl.getAttribute("src") || "").trim() : "";
+            if (!s) return;
+            trackUrl(s);
+            images.push({
+              id: "img-" + Date.now() + "-" + idx + "-" + images.length + "-" + Math.random().toString(36).slice(2, 5),
+              src: s,
+              w: 0,
+              h: 0,
+              ratioLabel: "图床外链"
+            });
+          };
+
+          const asymEl = el.querySelector(".wt-asym");
+          const polEl = el.querySelector(".wt-pol");
+          const filmEl = el.querySelector(".wt-film");
+          const gridEl = el.querySelector(".wt-grid");
+          const singleEl = el.querySelector(".wt-single");
+
+          if (asymEl) {
+            layout = "asymmetric";
+            asymEl.querySelectorAll("img").forEach(addImgFrom);
+          } else if (polEl) {
+            layout = "polaroid";
+            const mainEl = polEl.querySelector(".wt-pol-main");
+            const inEl = polEl.querySelector(".wt-pol-in");
+            if (mainEl) {
+              addImgFrom(mainEl.querySelector("img"));
+              const ar = mainEl.style.aspectRatio || "";
+              if (ar.includes("9") && ar.includes("16")) polaroidRatio = "916";
+              else polaroidRatio = "34";
+            }
+            if (inEl) {
+              addImgFrom(inEl.querySelector("img"));
+              if (inEl.style.left) polaroidX = Math.round(parseFloat(inEl.style.left)) || 52;
+              if (inEl.style.top) polaroidY = Math.round(parseFloat(inEl.style.top)) || 62;
+              if (inEl.style.width) polaroidSize = Math.round(parseFloat(inEl.style.width)) || 46;
+              if (inEl.style.borderWidth) polaroidBorder = Math.round(parseFloat(inEl.style.borderWidth)) || 8;
+              if ((inEl.style.transform || "").includes("rotate")) polaroidTilt = true;
+            }
+          } else if (filmEl) {
+            layout = "filmstrip";
+            const firstItem = filmEl.querySelector(".wt-film-i");
+            if (firstItem && firstItem.style.height) filmHeight = Math.round(parseFloat(firstItem.style.height)) || 236;
+            filmEl.querySelectorAll("img").forEach(addImgFrom);
+          } else if (gridEl) {
+            layout = "classic";
+            gridEl.querySelectorAll("img").forEach(addImgFrom);
+          } else if (singleEl) {
+            layout = "classic";
+            singleEl.querySelectorAll("img").forEach(addImgFrom);
+          }
+
+          let pLoc = "";
+          let pTime = "刚刚";
+          let likesText = "";
+          let likedByMe = false;
+          let repliesCount = "0";
+          let repostsCount = "0";
+          let likesCount = "0";
+          const comments = [];
+
+          if (isWechat) {
+            const locEl = el.querySelector(".wt-loc");
+            if (locEl) pLoc = locEl.textContent.trim();
+            const footSpan = el.querySelector(".wt-foot span");
+            if (footSpan) pTime = footSpan.textContent.trim() || "刚刚";
+            const likesEl = el.querySelector(".wt-likes span");
+            if (likesEl) likesText = likesEl.textContent.trim();
+            el.querySelectorAll(".wt-cmt").forEach((cEl, cIdx) => {
+              const users = Array.from(cEl.querySelectorAll(".wt-c-u")).map(u => u.textContent.trim());
+              const full = cEl.textContent || "";
+              const colonIdx = full.indexOf("：");
+              const cText = colonIdx !== -1 ? full.slice(colonIdx + 1).trim() : full.trim();
+              if (users.length >= 2) {
+                comments.push({ id: "cmt-" + Date.now() + "-" + idx + "-" + cIdx, author: users[0], replyTo: users[1], text: cText });
+              } else if (users.length === 1) {
+                comments.push({ id: "cmt-" + Date.now() + "-" + idx + "-" + cIdx, author: users[0], replyTo: "", text: cText });
+              }
+            });
+          } else {
+            const hEl = el.querySelector(".wt-tw-h");
+            if (hEl) {
+              const parts = (hEl.textContent || "").split("·");
+              if (parts.length > 1) pTime = parts.slice(1).join("·").trim() || "刚刚";
+            }
+            const barSpans = el.querySelectorAll(".wt-tw-bar > span");
+            if (barSpans[0]) repliesCount = barSpans[0].textContent.trim() || "0";
+            if (barSpans[1]) repostsCount = barSpans[1].textContent.trim() || "0";
+            if (barSpans[2]) {
+              likesCount = barSpans[2].textContent.trim() || "0";
+              const stAttr = barSpans[2].getAttribute("style") || "";
+              if (stAttr.includes("f43f5e") || barSpans[2].innerHTML.includes("wt-i-hf")) {
+                likedByMe = true;
+              }
+            }
+            el.querySelectorAll(".wt-tw-c").forEach((cEl, cIdx) => {
+              const users = Array.from(cEl.querySelectorAll("b")).map(u => u.textContent.trim());
+              const full = cEl.textContent || "";
+              const colonIdx = full.indexOf("：");
+              const cText = colonIdx !== -1 ? full.slice(colonIdx + 1).trim() : full.trim();
+              if (users.length >= 2) {
+                comments.push({ id: "cmt-" + Date.now() + "-" + idx + "-" + cIdx, author: users[0], replyTo: users[1], text: cText });
+              } else if (users.length === 1) {
+                comments.push({ id: "cmt-" + Date.now() + "-" + idx + "-" + cIdx, author: users[0], replyTo: "", text: cText });
+              }
+            });
+          }
+
+          return {
+            id: "post-" + Date.now() + "-" + idx,
+            layout,
+            text: pText,
+            location: pLoc,
+            time: pTime,
+            likesText,
+            likedByMe,
+            repliesCount,
+            repostsCount,
+            likesCount,
+            bookmarked: false,
+            polaroidRatio,
+            polaroidSize,
+            polaroidBorder,
+            polaroidX,
+            polaroidY,
+            polaroidTilt,
+            filmHeight,
+            comments,
+            images
+          };
+        });
+
+        // 8) Apply parsed state
+        state.platform = isWechat ? "wechat" : "twitter";
+        state.workMode = isTavern ? "tavern" : "code";
+        state.profile = {
+          ...state.profile,
+          name,
+          handle: isWechat ? state.profile.handle : handle,
+          bio,
+          location: isWechat ? state.profile.location : location,
+          joinedDate: isWechat ? state.profile.joinedDate : joinedDate,
+          following: isWechat ? state.profile.following : following,
+          followers: isWechat ? state.profile.followers : followers,
+          avatar: avatarUrl,
+          avatarPosY,
+          cover: coverUrl,
+          coverPosX,
+          coverPosY
+        };
+
+        if (importedPosts.length > 0) {
+          state.posts = importedPosts;
+          state.selectedPostId = importedPosts[0].id;
+        }
+
+        // Sync discovered image URLs into gallery (deduplicated)
+        let newlyAddedGal = 0;
+        discoveredUrls.forEach(u => {
+          if (!state.galleryImages.some(g => g.url === u)) {
+            state.galleryImages.unshift({
+              id: "gal-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+              url: u,
+              name: "",
+              group: "默认分组",
+              w: 0,
+              h: 0,
+              ratioLabel: "图床外链"
+            });
+            newlyAddedGal++;
+          }
+        });
+
+        // Restore SillyTavern regex config fields if imported from regex .json
+        if (regexMeta) {
+          const snEl = document.getElementById("input-tavern-script-name");
+          const frEl = document.getElementById("input-tavern-find-regex");
+          const disEl = document.getElementById("input-tavern-regex-disabled");
+          if (snEl) snEl.value = regexMeta.scriptName;
+          if (frEl) frEl.value = regexMeta.findRegex;
+          if (disEl) disEl.checked = regexMeta.disabled;
+        }
+
+        renderAll();
+        showToast(`已导入 ${isWechat ? "微信朋友圈" : "推特 / X"}（${importedPosts.length} 条动态）${newlyAddedGal ? `，并收录 ${newlyAddedGal} 张外链到图库` : ""}`);
+        return true;
+      }
+
+      document.getElementById("btn-open-import-code").addEventListener("click", () => {
+        document.getElementById("import-code-modal").classList.remove("hidden");
+      });
+      const closeImportCodeModal = () => document.getElementById("import-code-modal").classList.add("hidden");
+      document.getElementById("btn-import-code-close").addEventListener("click", closeImportCodeModal);
+      document.getElementById("btn-import-code-cancel").addEventListener("click", closeImportCodeModal);
+      document.getElementById("import-code-modal").addEventListener("click", (e) => {
+        if (e.target.id === "import-code-modal") closeImportCodeModal();
+      });
+      document.getElementById("btn-clear-import-code").addEventListener("click", () => {
+        document.getElementById("textarea-import-code").value = "";
+      });
+      document.getElementById("btn-pick-import-code-file").addEventListener("click", () => {
+        document.getElementById("input-import-code-file").click();
+      });
+      document.getElementById("input-import-code-file").addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const content = String(reader.result || "");
+          document.getElementById("textarea-import-code").value = content;
+          if (parseAndImportExportedCode(content)) {
+            closeImportCodeModal();
+          }
+        };
+        reader.readAsText(file, "utf-8");
+        e.target.value = "";
+      });
+      document.getElementById("btn-run-import-code").addEventListener("click", () => {
+        const content = document.getElementById("textarea-import-code").value;
+        if (parseAndImportExportedCode(content)) {
+          closeImportCodeModal();
+        }
       });
       document.getElementById("code-include-header").addEventListener("change", (e) => {
         codeIncludeHeader = e.target.checked;
