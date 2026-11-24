@@ -371,6 +371,18 @@
               <span>清空当前排版</span>
             </button>
           </div>
+          <!-- Post Order Direction & Manual Reorder (Drag + Up/Down Arrows) -->
+          <div class="pt-2 border-t border-zinc-200/70 space-y-2">
+            <div class="flex items-center justify-between gap-1.5">
+              <span class="text-[11px] font-medium text-zinc-600">动态排序（支持拖拽或箭头调序）</span>
+              <button id="btn-toggle-post-order" type="button" title="切换正序（往下叠加）或倒序（往上叠加）"
+                class="px-2 py-0.5 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-zinc-700 text-[10.5px] font-semibold inline-flex items-center gap-1 transition-colors shrink-0">
+                <i data-lucide="arrow-up-down" class="w-3 h-3"></i>
+                <span id="post-order-mode-label">正序 · 往下叠加</span>
+              </button>
+            </div>
+            <div id="editor-posts-order-list" class="space-y-1 max-h-40 overflow-y-auto pr-0.5"></div>
+          </div>
         </div>
 
         <!-- 1. Image Upload & Order -->
@@ -1252,7 +1264,8 @@
       let openWechatMenuPostId = null;
       const DEFAULT_GALLERY_GROUPS = ["默认分组", "人物", "场景", "头像封面"];
       const state = {
-        workMode: "image", // "image" | "code"
+        workMode: "image", // "image" | "code" | "tavern"
+        postOrderMode: "asc", // "asc" (正序·往下叠加) | "desc" (倒序·往上叠加)
         platform: "wechat", // "wechat" | "twitter"
         viewport: "mobile", // "mobile" | "desktop"
         mobileTab: "preview", // "preview" | "editor"
@@ -1952,6 +1965,31 @@
 
         const postIdx = state.posts.findIndex(x => x.id === post.id);
         document.getElementById("editing-post-label").textContent = `动态 #${postIdx + 1} · ${LAYOUT_LABELS[post.layout]}`;
+        const orderModeLabel = document.getElementById("post-order-mode-label");
+        if (orderModeLabel) {
+          orderModeLabel.textContent = state.postOrderMode === "desc" ? "倒序 · 往上叠加" : "正序 · 往下叠加";
+        }
+        const orderListEl = document.getElementById("editor-posts-order-list");
+        if (orderListEl) {
+          orderListEl.innerHTML = state.posts.map((item, i) => {
+            const isActive = item.id === state.selectedPostId;
+            const thumb = (item.images && item.images[0] && item.images[0].src) ? item.images[0].src : "";
+            const previewText = (item.text || "").trim() || (thumb ? `含 ${item.images.length} 张图片` : "空白动态");
+            return `
+              <div draggable="true" data-order-post-id="${item.id}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] transition-colors ${isActive ? "border-zinc-900 bg-white shadow-2xs" : "border-zinc-200/80 bg-white/70 hover:bg-white"}">
+                <span class="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-700 shrink-0 select-none" title="按住拖拽排序">⋮⋮</span>
+                <button type="button" data-order-select-post="${item.id}" class="flex-1 min-w-0 flex items-center gap-1.5 text-left">
+                  <span class="px-1 py-0.2 rounded ${isActive ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"} text-[10px] font-semibold shrink-0">#${i + 1}</span>
+                  ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" class="w-4 h-4 rounded object-cover shrink-0 bg-zinc-100" />` : ""}
+                  <span class="truncate ${isActive ? "font-semibold text-zinc-900" : "text-zinc-600"}">${escapeHtml(previewText)}</span>
+                </button>
+                <div class="flex items-center gap-0.5 shrink-0">
+                  <button type="button" data-move-post-up="${item.id}" ${i === 0 ? "disabled" : ""} title="上移一条" class="w-5 h-5 rounded border border-zinc-200 bg-zinc-50 hover:bg-zinc-200 disabled:opacity-30 text-zinc-700 flex items-center justify-center text-[10px]">↑</button>
+                  <button type="button" data-move-post-down="${item.id}" ${i === state.posts.length - 1 ? "disabled" : ""} title="下移一条" class="w-5 h-5 rounded border border-zinc-200 bg-zinc-50 hover:bg-zinc-200 disabled:opacity-30 text-zinc-700 flex items-center justify-center text-[10px]">↓</button>
+                </div>
+              </div>`;
+          }).join("");
+        }
         document.getElementById("post-image-count-badge").textContent = `${post.images.length} 张图片`;
 
         // Render uploaded images list
@@ -2128,6 +2166,7 @@
           version: 2,
           savedAt: Date.now(),
           workMode: state.workMode,
+          postOrderMode: state.postOrderMode,
           platform: state.platform,
           viewport: state.viewport,
           selectedPostId: state.selectedPostId,
@@ -2186,6 +2225,9 @@
         }
         if (data.workMode === "image" || data.workMode === "code" || data.workMode === "tavern") {
           state.workMode = data.workMode;
+        }
+        if (data.postOrderMode === "asc" || data.postOrderMode === "desc") {
+          state.postOrderMode = data.postOrderMode;
         }
         if (data.platform === "wechat" || data.platform === "twitter") {
           state.platform = data.platform;
@@ -2626,7 +2668,11 @@
           comments: [],
           images: []
         };
-        state.posts.unshift(newPost);
+        if (state.postOrderMode === "desc") {
+          state.posts.unshift(newPost);
+        } else {
+          state.posts.push(newPost);
+        }
         state.selectedPostId = id;
         state.editorTab = "post";
         state.mobileTab = "editor";
@@ -2769,6 +2815,98 @@
 
       document.getElementById("btn-new-post-top").addEventListener("click", createNewPost);
       document.getElementById("btn-create-blank-post").addEventListener("click", createNewPost);
+
+      document.getElementById("btn-toggle-post-order").addEventListener("click", () => {
+        state.postOrderMode = state.postOrderMode === "asc" ? "desc" : "asc";
+        if (state.posts.length > 1) {
+          state.posts.reverse();
+        }
+        renderAll();
+        showToast(state.postOrderMode === "asc"
+          ? "已切换为正序（第一条在顶，新动态往下叠加）"
+          : "已切换为倒序（第一条在底，新动态往上叠加）");
+      });
+
+      const postsOrderListEl = document.getElementById("editor-posts-order-list");
+      let draggingOrderPostId = null;
+
+      postsOrderListEl.addEventListener("click", (e) => {
+        const upBtn = e.target.closest("[data-move-post-up]");
+        if (upBtn) {
+          const idx = state.posts.findIndex(p => p.id === upBtn.dataset.movePostUp);
+          if (idx > 0) {
+            const tmp = state.posts[idx - 1];
+            state.posts[idx - 1] = state.posts[idx];
+            state.posts[idx] = tmp;
+            renderAll();
+          }
+          return;
+        }
+        const downBtn = e.target.closest("[data-move-post-down]");
+        if (downBtn) {
+          const idx = state.posts.findIndex(p => p.id === downBtn.dataset.movePostDown);
+          if (idx >= 0 && idx < state.posts.length - 1) {
+            const tmp = state.posts[idx + 1];
+            state.posts[idx + 1] = state.posts[idx];
+            state.posts[idx] = tmp;
+            renderAll();
+          }
+          return;
+        }
+        const selBtn = e.target.closest("[data-order-select-post]");
+        if (selBtn) {
+          state.selectedPostId = selBtn.dataset.orderSelectPost;
+          renderAll();
+        }
+      });
+
+      postsOrderListEl.addEventListener("dragstart", (e) => {
+        const row = e.target.closest("[data-order-post-id]");
+        if (!row) return;
+        draggingOrderPostId = row.dataset.orderPostId;
+        row.classList.add("opacity-50");
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", draggingOrderPostId);
+        }
+      });
+
+      postsOrderListEl.addEventListener("dragover", (e) => {
+        const row = e.target.closest("[data-order-post-id]");
+        if (!row || !draggingOrderPostId || row.dataset.orderPostId === draggingOrderPostId) return;
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+        row.classList.add("ring-2", "ring-zinc-900");
+      });
+
+      postsOrderListEl.addEventListener("dragleave", (e) => {
+        const row = e.target.closest("[data-order-post-id]");
+        if (row) row.classList.remove("ring-2", "ring-zinc-900");
+      });
+
+      postsOrderListEl.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const row = e.target.closest("[data-order-post-id]");
+        if (row) row.classList.remove("ring-2", "ring-zinc-900");
+        if (!row || !draggingOrderPostId) return;
+        const targetId = row.dataset.orderPostId;
+        if (targetId === draggingOrderPostId) return;
+        const fromIdx = state.posts.findIndex(p => p.id === draggingOrderPostId);
+        const toIdx = state.posts.findIndex(p => p.id === targetId);
+        if (fromIdx !== -1 && toIdx !== -1) {
+          const [moved] = state.posts.splice(fromIdx, 1);
+          state.posts.splice(toIdx, 0, moved);
+          renderAll();
+        }
+        draggingOrderPostId = null;
+      });
+
+      postsOrderListEl.addEventListener("dragend", () => {
+        draggingOrderPostId = null;
+        postsOrderListEl.querySelectorAll("[data-order-post-id]").forEach(el => {
+          el.classList.remove("opacity-50", "ring-2", "ring-zinc-900");
+        });
+      });
       document.getElementById("btn-add-post-bottom").addEventListener("click", createNewPost);
 
       // Post image dropzone & file picker
@@ -3865,6 +4003,7 @@
           version: 2,
           exportedAt: new Date().toISOString(),
           workMode: state.workMode,
+          postOrderMode: state.postOrderMode,
           platform: state.platform,
           viewport: state.viewport,
           selectedPostId: state.selectedPostId,
