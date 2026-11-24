@@ -4683,23 +4683,46 @@
         }
 
         const safeUrl = (src) => isHostedUrl(src) ? escapeHtml(src) : "";
-        const heartSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-        const heartFillSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="#f43f5e" stroke="#f43f5e" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-        const msgSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>`;
-        const repostSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>`;
-        const bmSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>`;
-        const verifiedSvg = renderTwitterVerifiedBadge("wt-verified");
+        const verifiedInner = renderTwitterVerifiedBadge("wt-verified").replace(/^<svg[^>]*>/i, "").replace(/<\/svg>\s*$/i, "").trim();
+
+        // Reusable SVG <symbol> sprite (defined ONCE at top, referenced via <use href="#..."/> in every post)
+        const heartSvg = `<svg class="wt-ic"><use href="#wt-i-h"/></svg>`;
+        const heartFillSvg = `<svg class="wt-ic"><use href="#wt-i-hf"/></svg>`;
+        const msgSvg = `<svg class="wt-ic"><use href="#wt-i-m"/></svg>`;
+        const repostSvg = `<svg class="wt-ic"><use href="#wt-i-r"/></svg>`;
+        const bmSvg = `<svg class="wt-ic"><use href="#wt-i-b"/></svg>`;
+        const verifiedSvg = `<svg class="wt-verified" aria-label="已认证"><use href="#wt-i-v"/></svg>`;
+
+        let spriteSymbols = "";
+        if (isWechat) {
+          const hasAnyLikes = chosenPosts.some(post => {
+            const likes = (post.likesText || "").split(/[,，]/).map(x => x.trim()).filter(Boolean);
+            return post.likedByMe || likes.length > 0;
+          });
+          if (hasAnyLikes) {
+            spriteSymbols = `<symbol id="wt-i-h" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>`;
+          }
+        } else {
+          spriteSymbols =
+            `<symbol id="wt-i-v" viewBox="0 0 22 22">${verifiedInner}</symbol>` +
+            `<symbol id="wt-i-m" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>` +
+            `<symbol id="wt-i-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>` +
+            `<symbol id="wt-i-h" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>` +
+            `<symbol id="wt-i-hf" viewBox="0 0 24 24" fill="#f43f5e" stroke="#f43f5e" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>` +
+            `<symbol id="wt-i-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>`;
+        }
+        const svgSpriteHtml = spriteSymbols ? `<svg style="display:none" aria-hidden="true">${spriteSymbols}</svg>` : "";
 
         const renderExportMediaHtml = (post) => {
           const imgs = (post.images || []).filter(img => isHostedUrl(img.src));
           if (!imgs.length) return "";
           if (post.layout === "asymmetric") {
-            if (imgs.length === 1) return `<div class="wt-single"><img src="${safeUrl(imgs[0].src)}" alt="" /></div>`;
+            if (imgs.length === 1) return `<div class="wt-single"><img src="${safeUrl(imgs[0].src)}" alt=""/></div>`;
             if (imgs.length === 2) {
-              return `<div class="wt-asym wt-asym-2"><div class="wt-asym-l"><img src="${safeUrl(imgs[0].src)}" alt="" /></div><div class="wt-asym-r"><img src="${safeUrl(imgs[1].src)}" alt="" /></div></div>`;
+              return `<div class="wt-asym wt-asym-2"><div class="wt-asym-l"><img src="${safeUrl(imgs[0].src)}" alt=""/></div><div class="wt-asym-r"><img src="${safeUrl(imgs[1].src)}" alt=""/></div></div>`;
             }
             const extra = imgs.length - 3;
-            return `<div class="wt-asym"><div class="wt-asym-l"><img src="${safeUrl(imgs[0].src)}" alt="" /></div><div class="wt-asym-r"><img src="${safeUrl(imgs[1].src)}" alt="" /></div><div class="wt-asym-r"><img src="${safeUrl(imgs[2].src)}" alt="" />${extra > 0 ? `<div class="wt-more">+${extra}</div>` : ""}</div></div>`;
+            return `<div class="wt-asym"><div class="wt-asym-l"><img src="${safeUrl(imgs[0].src)}" alt=""/></div><div class="wt-asym-r"><img src="${safeUrl(imgs[1].src)}" alt=""/></div><div class="wt-asym-r"><img src="${safeUrl(imgs[2].src)}" alt=""/>${extra > 0 ? `<div class="wt-more">+${extra}</div>` : ""}</div></div>`;
           }
           if (post.layout === "polaroid") {
             const ratio = post.polaroidRatio === "34" ? "3/4" : "9/16";
@@ -4708,26 +4731,21 @@
             const px = Math.min(Math.max(post.polaroidX ?? 52, 0), Math.max(0, 100 - size));
             const py = Math.min(Math.max(post.polaroidY ?? 62, 0), 105);
             const rot = post.polaroidTilt ? "transform:rotate(3deg);" : "";
-            const mainRatioNum = post.polaroidRatio === "34" ? (4 / 3) : (16 / 9);
-            const mainHpct = 72 * mainRatioNum;
-            const insetBottomPct = (py / 100) * mainHpct + size;
-            const extraPadPct = Math.max(0, Math.ceil(insetBottomPct - mainHpct) + 2);
-            const inset = imgs.length >= 2
-              ? `<div class="wt-pol-in" style="left:${px}%;top:${py}%;width:${size}%;border-width:${bw}px;${rot}"><img src="${safeUrl(imgs[1].src)}" alt="" /></div>`
-              : "";
-            return `<div class="wt-pol" style="padding-bottom:${imgs.length >= 2 ? extraPadPct : 0}%;"><div class="wt-pol-cv"><div class="wt-pol-main" style="width:${imgs.length >= 2 ? "72%" : "100%"};aspect-ratio:${ratio};"><img src="${safeUrl(imgs[0].src)}" alt="" /></div>${inset}</div></div>`;
+            const padB = Math.max(12, Math.round((py + size * 0.72) - 96));
+            return `<div class="wt-pol" style="padding-bottom:${padB}%;"><div class="wt-pol-cv"><div class="wt-pol-main" style="width:72%;aspect-ratio:${ratio};"><img src="${safeUrl(imgs[0].src)}" alt=""/></div>${imgs[1] ? `<div class="wt-pol-in" style="left:${px}%;top:${py}%;width:${size}%;border-width:${bw}px;${rot}"><img src="${safeUrl(imgs[1].src)}" alt=""/></div>` : ""}</div></div>`;
           }
           if (post.layout === "filmstrip") {
-            const h = post.filmHeight || 236;
-            return `<div class="wt-film">${imgs.map(img => `<div class="wt-film-i" style="height:${h}px;"><img src="${safeUrl(img.src)}" alt="" /></div>`).join("")}</div>`;
+            const fh = post.filmHeight || 236;
+            return `<div class="wt-film">${imgs.map(img => `<div class="wt-film-i" style="height:${fh}px;"><img src="${safeUrl(img.src)}" alt=""/></div>`).join("")}</div>`;
           }
-          if (imgs.length === 1) return `<div class="wt-single"><img src="${safeUrl(imgs[0].src)}" alt="" /></div>`;
+          if (imgs.length === 1) return `<div class="wt-single"><img src="${safeUrl(imgs[0].src)}" alt=""/></div>`;
           const cols = (imgs.length === 2 || imgs.length === 4) ? "wt-grid-2" : "wt-grid-3";
-          return `<div class="wt-grid ${cols}">${imgs.slice(0, 9).map(img => `<div class="wt-cell"><img src="${safeUrl(img.src)}" alt="" /></div>`).join("")}</div>`;
+          return `<div class="wt-grid ${cols}">${imgs.slice(0, 9).map(img => `<div class="wt-cell"><img src="${safeUrl(img.src)}" alt=""/></div>`).join("")}</div>`;
         };
 
         const avUrl = safeUrl(p.avatar);
         const covUrl = safeUrl(p.cover);
+        const avBgCls = avUrl ? " wt-av-bg" : "";
         let headerHtml = "";
         let postsHtml = "";
 
@@ -4737,11 +4755,11 @@
           const camSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>`;
           if (codeIncludeHeader) {
             const wcCamBtn = state.workMode === "tavern"
-              ? `<button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-wc-cam" title="切换开场白列表">${camSvg}</button>`
+              ? `<button type="button" id="wt-toggle-dir-btn" onclick="wtTog(event)" class="wt-wc-cam" title="切换开场白列表">${camSvg}</button>`
               : "";
-            headerHtml += `<div class="wt-wc-head"><div class="wt-wc-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}${wcCamBtn}</div><div class="wt-wc-me"><span class="wt-wc-name">${escapeHtml(displayName)}</span><div class="wt-wc-av">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div></div>${p.bio ? `<div class="wt-wc-bio">${escapeHtml(p.bio)}</div>` : ""}`;
+            headerHtml += `<div class="wt-wc-head"><div class="wt-wc-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt=""/>` : ""}${wcCamBtn}</div><div class="wt-wc-me"><span class="wt-wc-name">${escapeHtml(displayName)}</span><div class="wt-wc-av${avBgCls}"></div></div></div>${p.bio ? `<div class="wt-wc-bio">${escapeHtml(p.bio)}</div>` : ""}`;
           } else if (state.workMode === "tavern") {
-            headerHtml += `<div class="wt-dir-topbar"><button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-dir-topbtn">${camSvg}<span class="wt-toggle-label">开场白列表</span></button></div>`;
+            headerHtml += `<div class="wt-dir-topbar"><button type="button" id="wt-toggle-dir-btn" onclick="wtTog(event)" class="wt-dir-topbtn">${camSvg}<span class="wt-toggle-label">开场白列表</span></button></div>`;
           }
           postsHtml += chosenPosts.map((post, idx) => {
             const likes = (post.likesText || "").split(/[,，]/).map(x => x.trim()).filter(Boolean);
@@ -4750,9 +4768,9 @@
             const media = renderExportMediaHtml(post);
             const postNum = idx + 1;
             const tAttr = state.workMode === "tavern"
-              ? ` data-wt-tavern-post="1" data-wt-swipe="${postNum}" onclick="window.wtSwitchArchive&&window.wtSwitchArchive(${postNum}, this)"`
+              ? ` data-wt-p="1" onclick="wtGo(${postNum},this)"`
               : "";
-            return `<div class="wt-post${state.workMode === "tavern" ? " wt-tavern-card" : ""}"${tAttr}><div class="wt-av-sm wt-av-wc">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-author-wc">${escapeHtml(displayName)}</div>${post.text ? `<div class="wt-text">${formatPostText(post.text, false)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}${post.location ? `<div class="wt-loc">${escapeHtml(post.location)}</div>` : ""}<div class="wt-foot"><span>${escapeHtml(post.time || "刚刚")}</span><span class="wt-wc-more"><i></i><i></i></span></div>${hasInt ? `<div class="wt-int">${likes.length ? `<div class="wt-likes">${heartSvg}<span>${escapeHtml(likes.join("，"))}</span></div>` : ""}${(post.comments || []).map((c, cidx) => `<div class="wt-cmt${likes.length && cidx === 0 ? " wt-cmt-top" : ""}">${c.replyTo ? `<span class="wt-c-u">${escapeHtml(c.author)}</span> 回复 <span class="wt-c-u">${escapeHtml(c.replyTo)}</span>：${escapeHtml(c.text)}` : `<span class="wt-c-u">${escapeHtml(c.author)}</span>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
+            return `<div class="wt-post${state.workMode === "tavern" ? " wt-tavern-card" : ""}"${tAttr}><div class="wt-av-sm wt-av-wc${avBgCls}"></div><div class="wt-body"><div class="wt-author-wc">${escapeHtml(displayName)}</div>${post.text ? `<div class="wt-text">${formatPostText(post.text, false)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}${post.location ? `<div class="wt-loc">${escapeHtml(post.location)}</div>` : ""}<div class="wt-foot"><span>${escapeHtml(post.time || "刚刚")}</span><span class="wt-wc-more"><i></i><i></i></span></div>${hasInt ? `<div class="wt-int">${likes.length ? `<div class="wt-likes">${heartSvg}<span>${escapeHtml(likes.join("，"))}</span></div>` : ""}${(post.comments || []).map((c, cidx) => `<div class="wt-cmt${likes.length && cidx === 0 ? " wt-cmt-top" : ""}">${c.replyTo ? `<span class="wt-c-u">${escapeHtml(c.author)}</span> 回复 <span class="wt-c-u">${escapeHtml(c.replyTo)}</span>：${escapeHtml(c.text)}` : `<span class="wt-c-u">${escapeHtml(c.author)}</span>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
           }).join("");
         } else {
           const covPosX = p.coverPosX ?? 50;
@@ -4760,133 +4778,40 @@
           const listSvg = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
           if (codeIncludeHeader) {
             const twDirBtn = state.workMode === "tavern"
-              ? `<button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-tw-dirbtn">${listSvg}<span class="wt-toggle-label">开场白列表</span></button>`
+              ? `<button type="button" id="wt-toggle-dir-btn" onclick="wtTog(event)" class="wt-tw-dirbtn">${listSvg}<span class="wt-toggle-label">开场白列表</span></button>`
               : "";
-            headerHtml += `<div class="wt-tw-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt="" />` : ""}</div><div class="wt-tw-prof"><div class="wt-tw-toprow"><div class="wt-tw-av"><div class="wt-tw-av-in">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div></div>${twDirBtn}</div><div class="wt-tw-name">${escapeHtml(displayName)}${verifiedSvg}</div><div class="wt-tw-handle">${escapeHtml(displayHandle)}</div>${p.bio ? `<div class="wt-tw-bio">${escapeHtml(p.bio)}</div>` : ""}${(p.location || p.joinedDate) ? `<div class="wt-tw-meta">${p.location ? `<span>${escapeHtml(p.location)}</span>` : ""}${p.joinedDate ? `<span>${escapeHtml(p.joinedDate)}</span>` : ""}</div>` : ""}<div class="wt-tw-stat"><span><b>${escapeHtml(p.following || "0")}</b> 正在关注</span><span><b>${escapeHtml(p.followers || "0")}</b> 关注者</span></div></div>`;
+            headerHtml += `<div class="wt-tw-cov">${covUrl ? `<img src="${covUrl}" style="object-position:${covPosX}% ${covPosY}%;" alt=""/>` : ""}</div><div class="wt-tw-prof"><div class="wt-tw-toprow"><div class="wt-tw-av"><div class="wt-tw-av-in${avBgCls}"></div></div>${twDirBtn}</div><div class="wt-tw-name">${escapeHtml(displayName)}${verifiedSvg}</div><div class="wt-tw-handle">${escapeHtml(displayHandle)}</div>${p.bio ? `<div class="wt-tw-bio">${escapeHtml(p.bio)}</div>` : ""}${(p.location || p.joinedDate) ? `<div class="wt-tw-meta">${p.location ? `<span>${escapeHtml(p.location)}</span>` : ""}${p.joinedDate ? `<span>${escapeHtml(p.joinedDate)}</span>` : ""}</div>` : ""}<div class="wt-tw-stat"><span><b>${escapeHtml(p.following || "0")}</b> 正在关注</span><span><b>${escapeHtml(p.followers || "0")}</b> 关注者</span></div></div>`;
           } else if (state.workMode === "tavern") {
-            headerHtml += `<div class="wt-dir-topbar"><button type="button" id="wt-toggle-dir-btn" onclick="window.wtToggleDir&&window.wtToggleDir(event)" class="wt-dir-topbtn">${listSvg}<span class="wt-toggle-label">开场白列表</span></button></div>`;
+            headerHtml += `<div class="wt-dir-topbar"><button type="button" id="wt-toggle-dir-btn" onclick="wtTog(event)" class="wt-dir-topbtn">${listSvg}<span class="wt-toggle-label">开场白列表</span></button></div>`;
           }
           postsHtml += chosenPosts.map((post, idx) => {
             const media = renderExportMediaHtml(post);
             const repliesDisp = String(post.repliesCount ?? "").trim() !== "" ? post.repliesCount : String((post.comments || []).length);
             const postNum = idx + 1;
             const tAttr = state.workMode === "tavern"
-              ? ` data-wt-tavern-post="1" data-wt-swipe="${postNum}" onclick="window.wtSwitchArchive&&window.wtSwitchArchive(${postNum}, this)"`
+              ? ` data-wt-p="1" onclick="wtGo(${postNum},this)"`
               : "";
-            return `<div class="wt-post${state.workMode === "tavern" ? " wt-tavern-card" : ""}"${tAttr}><div class="wt-av-sm wt-av-tw">${avUrl ? `<img src="${avUrl}" style="object-position:50% ${p.avatarPosY}%;" alt="" />` : ""}</div><div class="wt-body"><div class="wt-tw-row"><b class="wt-tw-a">${escapeHtml(displayName)}</b>${verifiedSvg}<span class="wt-tw-h">${escapeHtml(displayHandle)} · ${escapeHtml(post.time || "刚刚")}</span></div>${post.text ? `<div class="wt-text">${formatPostText(post.text, true)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}<div class="wt-tw-bar"><span>${msgSvg}${escapeHtml(repliesDisp)}</span><span>${repostSvg}${escapeHtml(post.repostsCount || "0")}</span><span${post.likedByMe ? ' style="color:#f43f5e;"' : ""}>${post.likedByMe ? heartFillSvg : heartSvg}${escapeHtml(formatTwitterLikeDisplay(post))}</span><span>${bmSvg}</span></div>${(post.comments && post.comments.length) ? `<div class="wt-tw-cmts">${post.comments.map(c => `<div class="wt-tw-c">${c.replyTo ? `<b>${escapeHtml(c.author)}</b> 回复 <b>${escapeHtml(c.replyTo)}</b>：${escapeHtml(c.text)}` : `<b>${escapeHtml(c.author)}</b>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
+            return `<div class="wt-post${state.workMode === "tavern" ? " wt-tavern-card" : ""}"${tAttr}><div class="wt-av-sm wt-av-tw${avBgCls}"></div><div class="wt-body"><div class="wt-tw-row"><b class="wt-tw-a">${escapeHtml(displayName)}</b>${verifiedSvg}<span class="wt-tw-h">${escapeHtml(displayHandle)} · ${escapeHtml(post.time || "刚刚")}</span></div>${post.text ? `<div class="wt-text">${formatPostText(post.text, true)}</div>` : ""}${media ? `<div class="wt-media">${media}</div>` : ""}<div class="wt-tw-bar"><span>${msgSvg}${escapeHtml(repliesDisp)}</span><span>${repostSvg}${escapeHtml(post.repostsCount || "0")}</span><span${post.likedByMe ? ' style="color:#f43f5e;"' : ""}>${post.likedByMe ? heartFillSvg : heartSvg}${escapeHtml(formatTwitterLikeDisplay(post))}</span><span>${bmSvg}</span></div>${(post.comments && post.comments.length) ? `<div class="wt-tw-cmts">${post.comments.map(c => `<div class="wt-tw-c">${c.replyTo ? `<b>${escapeHtml(c.author)}</b> 回复 <b>${escapeHtml(c.replyTo)}</b>：${escapeHtml(c.text)}` : `<b>${escapeHtml(c.author)}</b>：${escapeHtml(c.text)}`}</div>`).join("")}</div>` : ""}</div></div>`;
           }).join("");
         }
 
-        const feedMetaAttrs = ` data-wt-platform="${isWechat ? "wechat" : "twitter"}" data-wt-name="${escapeHtml(displayName)}" data-wt-handle="${escapeHtml(displayHandle)}" data-wt-av="${avUrl}" data-wt-avy="${p.avatarPosY ?? 50}"`;
+        const feedMetaAttrs = ` data-wt-platform="${isWechat ? "wechat" : "twitter"}" data-wt-name="${escapeHtml(displayName)}" data-wt-handle="${escapeHtml(displayHandle)}" data-wt-av="${avUrl ? "1" : ""}"`;
         const bodyHtml = state.workMode === "tavern"
-          ? `${headerHtml}<div id="wt-feed-view" class="wt-feed-view"${feedMetaAttrs}>${postsHtml}</div><div id="wt-dir-view" class="wt-dir-view" style="display:none;"><div id="wt-dir-list" class="wt-dir-list"></div></div>`
-          : `${headerHtml}${postsHtml}`;
+          ? `${svgSpriteHtml}${headerHtml}<div id="wt-feed-view" class="wt-feed-view"${feedMetaAttrs}>${postsHtml}</div><div id="wt-dir-view" class="wt-dir-view" style="display:none;"><div id="wt-dir-list" class="wt-dir-list"></div></div>`
+          : `${svgSpriteHtml}${headerHtml}${postsHtml}`;
 
-        const css = `<style>
-.wt-export{position:relative;width:100%;max-width:${maxWidth};margin:0 auto;background:#fff;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;box-sizing:border-box;overflow:hidden;border:none;}
-.wt-export *{box-sizing:border-box;}
-.wt-wc-head{position:relative;margin-bottom:36px;}
-.wt-wc-cov{position:relative;width:100%;aspect-ratio:16/9;max-height:240px;background:#6f6f6f;overflow:hidden;}
-.wt-wc-cam{position:absolute;top:12px;right:12px;z-index:20;width:32px;height:32px;border-radius:999px;border:none;background:rgba(0,0,0,.32);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);transition:background-color .15s;}
-.wt-wc-cam:hover{background:rgba(0,0,0,.52);}
-.wt-wc-cov img,.wt-tw-cov img,.wt-wc-av img,.wt-tw-av img,.wt-av-sm img{width:100%;height:100%;object-fit:cover;display:block;}
-.wt-wc-me{position:absolute;right:14px;bottom:-22px;display:flex;align-items:flex-end;gap:10px;}
-.wt-wc-name{color:#fff;font-weight:600;font-size:15px;padding-bottom:26px;text-shadow:0 1px 4px rgba(0,0,0,.45);}
-.wt-wc-av{width:60px;height:60px;border-radius:8px;overflow:hidden;background:#b5b5b5;flex-shrink:0;}
-.wt-wc-bio{padding:0 14px 12px;text-align:right;font-size:11px;color:#a1a1aa;}
-.wt-tw-cov{width:100%;aspect-ratio:3/1;background:#6f6f6f;overflow:hidden;}
-.wt-tw-prof{padding:0 14px 12px;border-bottom:1px solid #e4e4e7;}
-.wt-tw-av{position:relative;z-index:2;width:78px;height:78px;padding:4px;border-radius:999px;background:#fff;margin:-39px 0 8px;box-sizing:border-box;}
-.wt-tw-av-in{width:100%;height:100%;border-radius:999px;overflow:hidden;background:#b5b5b5;}
-.wt-tw-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px;}
-.wt-verified{width:16px;height:16px;flex-shrink:0;}
-.wt-tw-handle{font-size:12px;color:#71717a;margin-top:2px;}
-.wt-tw-bio{font-size:13px;line-height:1.5;margin-top:8px;}
-.wt-tw-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#71717a;margin-top:8px;}
-.wt-tw-stat{display:flex;gap:14px;font-size:12px;color:#71717a;margin-top:8px;}
-.wt-tw-stat b{color:#18181b;}
-.wt-post{display:flex;gap:10px;padding:14px;border-top:1px solid #f4f4f5;}
-.wt-post:first-child{border-top:none;}
-.wt-av-sm{width:38px;height:38px;overflow:hidden;background:#b8b8b8;flex-shrink:0;}
-.wt-av-wc{border-radius:6px;}
-.wt-av-tw{border-radius:999px;}
-.wt-body{flex:1;min-width:0;}
-.wt-author-wc{font-size:14px;font-weight:600;color:#576B95;}
-.wt-tw-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px;}
-.wt-tw-a{color:#18181b;}
-.wt-tw-h{color:#71717a;}
-.wt-text{font-size:13.5px;line-height:1.6;margin-top:4px;word-break:break-word;}
-.wt-media{margin-top:8px;width:100%;}
-.wt-single img{max-width:100%;max-height:360px;width:auto;height:auto;display:block;}
-.wt-grid{display:grid;gap:3px;width:100%;}
-.wt-grid-2{grid-template-columns:repeat(2,1fr);max-width:78%;}
-.wt-grid-3{grid-template-columns:repeat(3,1fr);}
-.wt-cell{aspect-ratio:1/1;overflow:hidden;background:#f1f5f9;}
-.wt-cell img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block;}
-.wt-asym{display:grid;grid-template-columns:1.12fr 1fr;gap:3px;width:100%;}
-.wt-asym-l{grid-row:span 2;position:relative;overflow:hidden;background:#f1f5f9;min-height:160px;}
-.wt-asym-2 .wt-asym-l{grid-row:span 1;aspect-ratio:9/14;}
-.wt-asym-l img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;}
-.wt-asym-r{position:relative;aspect-ratio:1/1;overflow:hidden;background:#f1f5f9;}
-.wt-asym-2 .wt-asym-r{aspect-ratio:auto;height:100%;}
-.wt-asym-r img{width:100%;height:100%;object-fit:cover;display:block;}
-.wt-more{position:absolute;inset:0;background:rgba(0,0,0,.45);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;}
-.wt-pol{width:100%;max-width:360px;}
-.wt-pol-cv{position:relative;width:100%;}
-.wt-pol-main{overflow:hidden;background:#f1f5f9;}
-.wt-pol-main img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block;}
-.wt-pol-in{position:absolute;aspect-ratio:1/1;border-style:solid;border-color:#fff;background:#fff;overflow:hidden;}
-.wt-pol-in img{width:100%;height:100%;object-fit:cover;display:block;}
-.wt-film{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;}
-.wt-film-i{flex:0 0 auto;overflow:hidden;background:#f1f5f9;}
-.wt-film-i img{height:100%;width:auto;display:block;}
-.wt-loc{font-size:11px;color:#576B95;margin-top:8px;}
-.wt-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;color:#a1a1aa;}
-.wt-wc-more{display:inline-flex;align-items:center;justify-content:center;gap:4px;width:32px;height:20px;border-radius:4px;background:#f7f7f7;}
-.wt-wc-more i{display:inline-block;width:3.5px;height:3.5px;border-radius:999px;background:#576B95;font-style:normal;}
-.wt-int{margin-top:8px;background:#f7f7f7;border-radius:4px;padding:7px 10px;font-size:12px;line-height:18px;}
-.wt-likes{display:flex;align-items:flex-start;gap:5px;color:#576B95;line-height:18px;}
-.wt-likes svg{flex-shrink:0;margin-top:2.5px;}
-.wt-cmt{color:#3f3f46;margin-top:2px;word-break:break-word;}
-.wt-cmt-top{margin-top:5px;padding-top:5px;border-top:1px solid #e4e4e7;}
-.wt-c-u{font-weight:500;color:#576B95;}
-.wt-tw-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-right:16px;font-size:12px;color:#71717a;}
-.wt-tw-bar span{display:inline-flex;align-items:center;gap:4px;}
-.wt-tw-cmts{margin-top:10px;padding-top:8px;border-top:1px solid #f4f4f5;font-size:12px;line-height:1.55;color:#3f3f46;}
-.wt-tw-c{margin-top:4px;word-break:break-word;}
-.wt-tw-c b{color:#18181b;}
-.wt-tavern-card{cursor:pointer;transition:background-color .18s ease,opacity .18s ease;}
-.wt-tavern-card:hover{background:#fafafa;}
-.wt-tavern-toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:rgba(24,24,27,.92);color:#fff;font-size:12px;padding:6px 14px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:10001;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis;}
-.wt-tavern-toast.show{opacity:1;}
-.wt-tw-toprow{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;}
-.wt-tw-toprow .wt-tw-av{margin:-39px 0 0;}
-.wt-wc-cam.is-active{background:rgba(24,24,27,.82);box-shadow:0 0 0 2px rgba(255,255,255,.55);}
-.wt-tw-dirbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:999px;border:1px solid #d4d4d8;background:#fff;color:#18181b;font-size:12px;font-weight:700;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s;}
-.wt-tw-dirbtn:hover{background:#f4f4f5;}
-.wt-tw-dirbtn.is-active{background:#18181b;border-color:#18181b;color:#fff;}
-.wt-dir-topbar{display:flex;justify-content:flex-end;padding:10px 14px 4px;}
-.wt-dir-topbtn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;border:1px solid #e4e4e7;background:#f4f4f5;color:#27272a;font-size:12px;font-weight:600;cursor:pointer;}
-.wt-dir-topbtn.is-active{background:#18181b;border-color:#18181b;color:#fff;}
-.wt-dir-view{padding:12px 14px 18px;border-top:1px solid #f4f4f5;}
-.wt-dir-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 2px 10px;border-bottom:1px solid #f4f4f5;margin-bottom:10px;}
-.wt-dir-bartitle{font-size:13px;font-weight:700;color:#18181b;}
-.wt-dir-back{border:1px solid #e4e4e7;background:#fafafa;color:#3f3f46;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;cursor:pointer;}
-.wt-dir-back:hover{background:#f4f4f5;}
-.wt-dir-list{display:flex;flex-direction:column;gap:14px;}
-.wt-dir-grp{display:flex;flex-direction:column;}
-.wt-dir-ghead{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:#3f3f46;padding:0 2px 6px;margin-bottom:6px;border-bottom:1.5px solid #27272a;}
-.wt-dir-gcount{font-size:10.5px;font-weight:600;color:#71717a;background:#f4f4f5;padding:1px 7px;border-radius:999px;}
-.wt-dir-item{display:flex;align-items:flex-start;gap:10px;padding:9px 6px;border-bottom:1px solid #f4f4f5;cursor:pointer;transition:background-color .15s;}
-.wt-dir-item:last-child{border-bottom:none;}
-.wt-dir-item:hover{background:#fafafa;}
-.wt-dir-idx{width:24px;height:24px;border-radius:6px;background:#f4f4f5;color:#3f3f46;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.wt-dir-item:hover .wt-dir-idx{background:#18181b;color:#fff;}
-.wt-dir-ibody{flex:1;min-width:0;}
-.wt-dir-iname{font-size:13px;font-weight:700;color:#18181b;line-height:1.4;}
-.wt-dir-idesc{font-size:11.5px;color:#52525b;line-height:1.55;margin-top:2px;word-break:break-word;}
-.wt-dir-empty{color:#a1a1aa;font-style:italic;}
-</style>`;
+        const avBgCss = avUrl ? `.wt-av-bg{background:#b8b8b8 url("${avUrl}") 50% ${p.avatarPosY ?? 50}%/cover no-repeat!important;}` : "";
+        const baseCss = `.wt-export{position:relative;width:100%;max-width:${maxWidth};margin:0 auto;background:#fff;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;box-sizing:border-box;overflow:hidden;border:none;}.wt-export *{box-sizing:border-box;}.wt-ic{width:13px;height:13px;display:inline-block;flex-shrink:0;vertical-align:middle;}${avBgCss}.wt-post{display:flex;gap:10px;padding:14px;border-top:1px solid #f4f4f5;}.wt-post:first-child{border-top:none;}.wt-av-sm{width:38px;height:38px;overflow:hidden;background:#b8b8b8;flex-shrink:0;}.wt-body{flex:1;min-width:0;}.wt-text{font-size:13.5px;line-height:1.6;margin-top:4px;word-break:break-word;}.wt-media{margin-top:8px;width:100%;}.wt-single img{max-width:100%;max-height:360px;width:auto;height:auto;display:block;}.wt-grid{display:grid;gap:4px;}.wt-grid-2{grid-template-columns:repeat(2,1fr);}.wt-grid-3{grid-template-columns:repeat(3,1fr);}.wt-cell{aspect-ratio:1/1;overflow:hidden;background:#f4f4f5;}.wt-cell img{width:100%;height:100%;object-fit:cover;display:block;}.wt-asym{display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:repeat(2,1fr);gap:4px;aspect-ratio:4/3;max-height:280px;}.wt-asym-2{grid-template-columns:1fr 1fr;grid-template-rows:1fr;aspect-ratio:3/2;}.wt-asym-l{grid-row:span 2;position:relative;overflow:hidden;background:#f4f4f5;}.wt-asym-2 .wt-asym-l{grid-row:span 1;}.wt-asym-r{position:relative;overflow:hidden;background:#f4f4f5;}.wt-asym img{width:100%;height:100%;object-fit:cover;display:block;}.wt-more{position:absolute;inset:0;background:rgba(0,0,0,.45);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;}.wt-pol{position:relative;width:100%;}.wt-pol-cv{position:relative;width:100%;}.wt-pol-main{overflow:hidden;background:#f4f4f5;}.wt-pol-main img{width:100%;height:100%;object-fit:cover;display:block;}.wt-pol-in{position:absolute;z-index:2;aspect-ratio:1/1;border-style:solid;border-color:#fff;background:#fff;box-shadow:0 10px 26px rgba(0,0,0,.18);overflow:hidden;}.wt-pol-in img{width:100%;height:100%;object-fit:cover;display:block;}.wt-film{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}.wt-film::-webkit-scrollbar{display:none;}.wt-film-i{flex:0 0 auto;background:#f4f4f5;}.wt-film-i img{height:100%;width:auto;display:block;object-fit:cover;}`;
+
+        const platCss = isWechat
+          ? `.wt-wc-head{position:relative;margin-bottom:36px;}.wt-wc-cov{position:relative;width:100%;aspect-ratio:16/9;max-height:240px;background:#6f6f6f;overflow:hidden;}.wt-wc-cov img{width:100%;height:100%;object-fit:cover;display:block;}.wt-wc-cam{position:absolute;top:12px;right:12px;z-index:20;width:32px;height:32px;border-radius:999px;border:none;background:rgba(0,0,0,.32);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);transition:background-color .15s;}.wt-wc-cam:hover{background:rgba(0,0,0,.52);}.wt-wc-cam.is-active{background:rgba(24,24,27,.82);box-shadow:0 0 0 2px rgba(255,255,255,.55);}.wt-wc-me{position:absolute;right:14px;bottom:-22px;display:flex;align-items:flex-end;gap:10px;}.wt-wc-name{color:#fff;font-weight:600;font-size:15px;padding-bottom:26px;text-shadow:0 1px 4px rgba(0,0,0,.45);}.wt-wc-av{width:60px;height:60px;border-radius:8px;overflow:hidden;background:#b5b5b5;flex-shrink:0;}.wt-wc-bio{padding:0 14px 12px;text-align:right;font-size:11px;color:#a1a1aa;}.wt-av-wc{border-radius:6px;}.wt-author-wc{font-size:14px;font-weight:600;color:#576B95;}.wt-loc{font-size:11px;color:#576B95;margin-top:6px;}.wt-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;color:#a1a1aa;}.wt-wc-more{display:inline-flex;align-items:center;gap:3px;background:#f7f7f7;padding:4px 8px;border-radius:4px;}.wt-wc-more i{width:3.5px;height:3.5px;border-radius:999px;background:#576B95;display:block;}.wt-int{margin-top:8px;background:#f7f7f7;border-radius:4px;padding:6px 9px;font-size:12px;line-height:1.55;color:#27272a;}.wt-likes{display:flex;align-items:flex-start;gap:5px;color:#576B95;font-weight:500;}.wt-likes svg{margin-top:3px;}.wt-cmt{margin-top:3px;word-break:break-word;}.wt-cmt-top{margin-top:5px;padding-top:5px;border-top:1px solid #e4e4e7;}.wt-c-u{color:#576B95;font-weight:600;}`
+          : `.wt-tw-cov{width:100%;aspect-ratio:3/1;background:#6f6f6f;overflow:hidden;}.wt-tw-cov img{width:100%;height:100%;object-fit:cover;display:block;}.wt-tw-prof{padding:0 14px 12px;border-bottom:1px solid #e4e4e7;}.wt-tw-toprow{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;}.wt-tw-av{position:relative;z-index:2;width:78px;height:78px;padding:4px;border-radius:999px;background:#fff;margin:-39px 0 0;box-sizing:border-box;}.wt-tw-av-in{width:100%;height:100%;border-radius:999px;overflow:hidden;background:#b5b5b5;}.wt-tw-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px;}.wt-verified{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle;}.wt-tw-handle{font-size:12px;color:#71717a;margin-top:2px;}.wt-tw-bio{font-size:13px;line-height:1.5;margin-top:8px;}.wt-tw-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#71717a;margin-top:8px;}.wt-tw-stat{display:flex;gap:14px;font-size:12px;color:#71717a;margin-top:8px;}.wt-tw-stat b{color:#18181b;}.wt-av-tw{border-radius:999px;}.wt-tw-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px;}.wt-tw-a{color:#18181b;}.wt-tw-h{color:#71717a;}.wt-tw-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-right:16px;font-size:12px;color:#71717a;}.wt-tw-bar span{display:inline-flex;align-items:center;gap:4px;}.wt-tw-cmts{margin-top:10px;padding-top:8px;border-top:1px solid #f4f4f5;font-size:12px;line-height:1.55;color:#3f3f46;}.wt-tw-c{margin-top:4px;word-break:break-word;}.wt-tw-c b{color:#18181b;}.wt-tw-dirbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:999px;border:1px solid #d4d4d8;background:#fff;color:#18181b;font-size:12px;font-weight:700;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s;}.wt-tw-dirbtn:hover{background:#f4f4f5;}.wt-tw-dirbtn.is-active{background:#18181b;border-color:#18181b;color:#fff;}`;
+
+        const tavernCss = state.workMode === "tavern"
+          ? `.wt-tavern-card{cursor:pointer;transition:background-color .18s ease,opacity .18s ease;}.wt-tavern-card:hover{background:#fafafa;}.wt-tavern-toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:rgba(24,24,27,.92);color:#fff;font-size:12px;padding:6px 14px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:10001;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis;}.wt-tavern-toast.show{opacity:1;}.wt-dir-topbar{display:flex;justify-content:flex-end;padding:10px 14px 4px;}.wt-dir-topbtn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;border:1px solid #e4e4e7;background:#f4f4f5;color:#27272a;font-size:12px;font-weight:600;cursor:pointer;}.wt-dir-topbtn.is-active{background:#18181b;border-color:#18181b;color:#fff;}.wt-dir-view{padding:12px 14px 18px;border-top:1px solid #f4f4f5;}.wt-dir-list{display:flex;flex-direction:column;gap:14px;}.wt-dir-grp{display:flex;flex-direction:column;}.wt-dir-ghead{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:#3f3f46;padding:0 2px 6px;margin-bottom:6px;border-bottom:1.5px solid #27272a;}.wt-dir-item{display:flex;align-items:flex-start;gap:10px;padding:9px 6px;border-bottom:1px solid #f4f4f5;cursor:pointer;transition:background-color .15s;}.wt-dir-item:last-child{border-bottom:none;}.wt-dir-item:hover{background:#fafafa;}.wt-dir-idx{width:24px;height:24px;border-radius:6px;background:#f4f4f5;color:#3f3f46;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}.wt-dir-item:hover .wt-dir-idx{background:#18181b;color:#fff;}.wt-dir-ibody{flex:1;min-width:0;}.wt-dir-iname{font-size:13px;font-weight:700;color:#18181b;line-height:1.4;}.wt-dir-idesc{font-size:11.5px;color:#52525b;line-height:1.55;margin-top:2px;word-break:break-word;}.wt-dir-empty{color:#a1a1aa;font-style:italic;}`
+          : "";
+
+        const css = `<style>${baseCss}${platCss}${tavernCss}</style>`;
 
         const docTitle = `${escapeHtml(displayName)} - ${isWechat ? "微信朋友圈" : "推特 / X"}`;
         const fullHtml = `<!DOCTYPE html>
@@ -4914,8 +4839,7 @@ ${state.workMode === "tavern" ? `<script>
   var platform = feedView ? (feedView.getAttribute("data-wt-platform") || "wechat") : "wechat";
   var authorName = feedView ? (feedView.getAttribute("data-wt-name") || "") : "";
   var authorHandle = feedView ? (feedView.getAttribute("data-wt-handle") || "") : "";
-  var authorAv = feedView ? (feedView.getAttribute("data-wt-av") || "") : "";
-  var authorAvY = feedView ? (feedView.getAttribute("data-wt-avy") || "50") : "50";
+  var hasAv = feedView ? !!feedView.getAttribute("data-wt-av") : false;
 
   function showMsg(msg){
     if(!toastEl) return;
@@ -4924,15 +4848,23 @@ ${state.workMode === "tavern" ? `<script>
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
   }
-
   function makeEl(tag, cls, text){
     var el = document.createElement(tag);
     if(cls) el.className = cls;
     if(text !== undefined && text !== null) el.textContent = String(text);
     return el;
   }
+  function makeUseIcon(id, cls){
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("class", cls || "wt-ic");
+    var u = document.createElementNS(ns, "use");
+    u.setAttribute("href", "#" + id);
+    s.appendChild(u);
+    return s;
+  }
 
-  window.wtToggleDir = function(ev){
+  window.wtTog = function(ev){
     if(ev && ev.stopPropagation) ev.stopPropagation();
     showingDir = !showingDir;
     if(feedView) feedView.style.display = showingDir ? "none" : "";
@@ -4945,10 +4877,7 @@ ${state.workMode === "tavern" ? `<script>
   };
 
   async function switchArchiveNode(swipeId, node){
-    if(node){
-      node.style.opacity = "0.5";
-      node.style.pointerEvents = "none";
-    }
+    if(node){ node.style.opacity = "0.5"; node.style.pointerEvents = "none"; }
     try {
       if(typeof setChatMessages === "function"){
         await setChatMessages([{ message_id: 0, swipe_id: swipeId }]);
@@ -4974,17 +4903,12 @@ ${state.workMode === "tavern" ? `<script>
           if(swipesCache && swipesCache[swipeId] !== undefined){
             await setChatMessage(swipesCache[swipeId], 0, { swipe_id: swipeId, refresh: "display_and_render_current" });
           }
-        } catch(e2){
-          console.error("Archive: 备用切换失败", e2);
-        }
+        } catch(e2){ console.error("Archive: 备用切换失败", e2); }
       }
     }
-    if(node){
-      node.style.opacity = "1";
-      node.style.pointerEvents = "auto";
-    }
+    if(node){ node.style.opacity = "1"; node.style.pointerEvents = "auto"; }
   }
-  window.wtSwitchArchive = switchArchiveNode;
+  window.wtGo = switchArchiveNode;
 
   function appendEmptyGreetingPost(swipeId, emptyIdx){
     if(!feedView) return;
@@ -4994,21 +4918,12 @@ ${state.workMode === "tavern" ? `<script>
       "先空着占个位置，这条开场白留给你自己发挥。"
     ];
     var copy = copyPool[(emptyIdx || 0) % copyPool.length];
-
     var postEl = makeEl("div", "wt-post wt-tavern-card");
-    postEl.setAttribute("data-wt-tavern-post", "1");
-    postEl.setAttribute("data-wt-swipe", String(swipeId));
+    postEl.setAttribute("data-wt-p", "1");
     postEl.addEventListener("click", function(){ switchArchiveNode(swipeId, postEl); });
 
-    var avWrap = makeEl("div", platform === "wechat" ? "wt-av-sm wt-av-wc" : "wt-av-sm wt-av-tw");
-    if(authorAv){
-      var img = document.createElement("img");
-      img.src = authorAv;
-      img.alt = "";
-      img.style.objectPosition = "50% " + authorAvY + "%";
-      avWrap.appendChild(img);
-    }
-    postEl.appendChild(avWrap);
+    var avCls = (platform === "wechat" ? "wt-av-sm wt-av-wc" : "wt-av-sm wt-av-tw") + (hasAv ? " wt-av-bg" : "");
+    postEl.appendChild(makeEl("div", avCls));
 
     var body = makeEl("div", "wt-body");
     if(platform === "wechat"){
@@ -5022,45 +4937,19 @@ ${state.workMode === "tavern" ? `<script>
       foot.appendChild(more);
       body.appendChild(foot);
     } else {
-      var makeIcon = function(ds){
-        var ns = "http://www.w3.org/2000/svg";
-        var s = document.createElementNS(ns, "svg");
-        s.setAttribute("viewBox", "0 0 24 24");
-        s.setAttribute("width", "13");
-        s.setAttribute("height", "13");
-        s.setAttribute("fill", "none");
-        s.setAttribute("stroke", "currentColor");
-        s.setAttribute("stroke-width", "2");
-        ds.forEach(function(d){
-          var pt = document.createElementNS(ns, "path");
-          pt.setAttribute("d", d);
-          s.appendChild(pt);
-        });
-        return s;
-      };
       var row = makeEl("div", "wt-tw-row");
       row.appendChild(makeEl("b", "wt-tw-a", authorName));
-      var vSvg = document.querySelector(".wt-verified");
-      if(vSvg) row.appendChild(vSvg.cloneNode(true));
+      row.appendChild(makeUseIcon("wt-i-v", "wt-verified"));
       row.appendChild(makeEl("span", "wt-tw-h", authorHandle + " · 刚刚"));
       body.appendChild(row);
       body.appendChild(makeEl("div", "wt-text", copy));
       var bar = makeEl("div", "wt-tw-bar");
-      var sMsg = makeEl("span");
-      sMsg.appendChild(makeIcon(["M7.9 20A9 9 0 1 0 4 16.1L2 22Z"]));
-      sMsg.appendChild(document.createTextNode("0"));
-      var sRep = makeEl("span");
-      sRep.appendChild(makeIcon(["m17 2 4 4-4 4", "M3 11v-1a4 4 0 0 1 4-4h14", "m7 22-4-4 4-4", "M21 13v1a4 4 0 0 1-4 4H3"]));
-      sRep.appendChild(document.createTextNode("0"));
-      var sLike = makeEl("span");
-      sLike.appendChild(makeIcon(["M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"]));
-      sLike.appendChild(document.createTextNode("0"));
-      var sBm = makeEl("span");
-      sBm.appendChild(makeIcon(["m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"]));
-      bar.appendChild(sMsg);
-      bar.appendChild(sRep);
-      bar.appendChild(sLike);
-      bar.appendChild(sBm);
+      [["wt-i-m","0"],["wt-i-r","0"],["wt-i-h","0"],["wt-i-b",""]].forEach(function(it){
+        var sp = makeEl("span");
+        sp.appendChild(makeUseIcon(it[0], "wt-ic"));
+        if(it[1]) sp.appendChild(document.createTextNode(it[1]));
+        bar.appendChild(sp);
+      });
       body.appendChild(bar);
     }
     postEl.appendChild(body);
@@ -5076,7 +4965,6 @@ ${state.workMode === "tavern" ? `<script>
       var ghead = makeEl("div", "wt-dir-ghead");
       ghead.appendChild(makeEl("span", "", groupName));
       grp.appendChild(ghead);
-
       items.forEach(function(item, idx){
         var numStr = (idx + 1) < 10 ? ("0" + (idx + 1)) : String(idx + 1);
         var row = makeEl("div", "wt-dir-item");
@@ -5101,16 +4989,12 @@ ${state.workMode === "tavern" ? `<script>
     dirList.appendChild(msg);
   }
 
-  var existingPostsCount = document.querySelectorAll("[data-wt-tavern-post]").length;
+  var existingPostsCount = document.querySelectorAll("[data-wt-p]").length;
 
   if(typeof getChatMessages !== "function"){
     var previewGroups = { "未收录": [] };
     for(var p = 1; p <= existingPostsCount; p++){
-      previewGroups["未收录"].push({
-        id: p,
-        title: "自定义开场白 " + (p < 10 ? "0" + p : p),
-        desc: "请自定义开场白"
-      });
+      previewGroups["未收录"].push({ id: p, title: "自定义开场白 " + (p < 10 ? "0" + p : p), desc: "请自定义开场白" });
     }
     renderArchiveGroups(previewGroups);
     return;
@@ -5123,7 +5007,6 @@ ${state.workMode === "tavern" ? `<script>
         renderSysMsg("[NULL] 暂无可切换的开场白。");
         return;
       }
-
       var swipes = messages[0].swipes;
       swipesCache = swipes;
       var archiveGroups = {};
@@ -5132,34 +5015,25 @@ ${state.workMode === "tavern" ? `<script>
     var reTitle = new RegExp(cOpen + "\\\\s*title:\\\\s*([\\\\s\\\\S]*?)\\\\s*" + cClose);
     var reDesc = new RegExp(cOpen + "\\\\s*desc:\\\\s*([\\\\s\\\\S]*?)\\\\s*" + cClose);
     var reGroup = new RegExp(cOpen + "\\\\s*group:\\\\s*([\\\\s\\\\S]*?)\\\\s*" + cClose);
-
       var emptyIdx = 0;
       for(var i = 1; i < swipes.length; i++){
         var content = String(swipes[i] || "");
         var title = "自定义开场白 " + (i < 10 ? "0" + i : i);
         var description = "请自定义开场白";
         var groupName = "未收录";
-
         var titleMatch = content.match(reTitle);
         if(titleMatch && titleMatch[1].trim()) title = titleMatch[1].trim();
-
         var descMatch = content.match(reDesc);
         if(descMatch && descMatch[1].trim()) description = descMatch[1].trim();
-
         var groupMatch = content.match(reGroup);
         if(groupMatch && groupMatch[1].trim()) groupName = groupMatch[1].trim();
-
-        if(!archiveGroups[groupName]){
-          archiveGroups[groupName] = [];
-        }
+        if(!archiveGroups[groupName]) archiveGroups[groupName] = [];
         archiveGroups[groupName].push({ id: i, title: title, desc: description });
-
         if(i > existingPostsCount){
           appendEmptyGreetingPost(i, emptyIdx);
           emptyIdx++;
         }
       }
-
       renderArchiveGroups(archiveGroups);
     } catch(error){
       console.error("Archive: 数据库检索异常", error);
